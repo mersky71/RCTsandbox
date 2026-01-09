@@ -1,0 +1,633 @@
+:root{
+  --bg: #0b0f14;
+  --card: #101723;
+  --text: #eaf0ff;
+  --muted: rgba(234,240,255,.72);
+  --muted2: rgba(234,240,255,.55);
+  --line: rgba(234,240,255,.12);
+
+  /* Park theming (JS swaps these) */
+  --park: #6aa9ff;
+  --park2: rgba(106,169,255,.18);
+  --parkText: #0b0f14;
+}
+
+*{ box-sizing: border-box; }
+html,body{ height:100%; }
+
+body{
+  margin:0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  background: #ffffff;
+  color: #111;
+}
+
+
+.sr-only{
+  position:absolute;
+  width:1px;height:1px;
+  padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0;
+}
+
+
+.topbar{
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:10px 12px;
+
+  /* BOLD PARK COLOR BAR */
+  background: var(--park);
+  border-bottom: none;
+  backdrop-filter: none;
+}
+
+.brand{
+  display:flex; align-items:center; gap:10px;
+}
+.brand__dot{
+  width:12px; height:12px; border-radius:999px;
+  background: var(--park);
+  box-shadow: 0 0 0 4px var(--park2);
+}
+.brand__title{ font-weight: 650; letter-spacing:.2px; }
+
+.topbar__center{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex: 1;
+  justify-content: center;
+}
+
+.parkSelect{
+  max-width: 220px;
+  min-width: 160px;
+  padding:8px 10px;
+  border-radius: 12px;
+  font-size: 14px;
+  border: 1px solid var(--line);
+  background: rgba(16,23,35,.7);
+  color: var(--text);
+  outline: none;
+}
+
+.pill{
+  padding:7px 10px;
+  border-radius:999px;
+  border: 1px solid var(--line);
+  background: rgba(16,23,35,.7);
+  color: var(--text);
+  font-size: 13px;
+}
+
+.iconBtn{
+  padding: 6px 10px;              /* horizontal padding so it widens */
+  font-size: 14px;                /* match park selector text */
+  font-weight: 500;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,.35);
+  background: rgba(0,0,0,.18);
+  color: #fff;
+  cursor: pointer;
+  white-space: nowrap;            /* prevent wrapping */
+}
+
+.menu{
+  position:absolute;
+  width: min(280px, calc(100vw - 24px)) ;
+  max-width: calc(100vw - 24px);
+  right: 0;
+  left: auto;
+  top: 56px;
+  padding: 2px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: rgba(16,23,35,.96);
+  box-shadow: 0 10px 35px rgba(0,0,0,.45);
+}
+.menu[aria-hidden="true"]{ display:none; }
+.menu__item{
+  width:100%;
+  text-align:left;
+  padding:10px 10px;
+  border-radius: 12px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+}
+.menu__item:hover{ background: rgba(255,255,255,.06); }
+
+.app{
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 16px 12px 40px;
+}
+
+.card{
+  border: 1px solid #ddd;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 14px;
+}
+
+.stack{ display:flex; flex-direction:column; gap:12px; }
+
+.h1{
+  font-size: 22px;
+  font-weight: 750;
+  margin: 0 0 8px 0;
+}
+.p{ margin:0; color: var(--muted); line-height: 1.35; }
+
+.formRow{ display:flex; flex-direction:column; gap:14px; }
+.label{ color: var(--muted); font-size: 13px; }
+.textarea, .input{
+  width:100%;
+  padding: 10px 10px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: #ffffff;
+  color: #111827;
+  
+  outline:none;
+  resize: vertical;
+}
+.textarea{ min-height: 70px; }
+
+.btnRow{ display:flex; gap:10px; flex-wrap: wrap; }
+.btn{
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: rgba(11,15,20,.55);
+  color: var(--text);
+  font-weight: 650;
+}
+.btnPrimary{
+  border-color: transparent;
+  background: var(--park);
+  color: #ffffff;
+}
+.btnDanger{
+  border-color: rgba(255,120,120,.22);
+  background: rgba(255,120,120,.12);
+}
+
+.sectionTitle{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:10px;
+  margin-top: 6px;
+}
+.sectionTitle h2{
+  margin:0;
+  font-size: 16px;
+  font-weight: 750;
+}
+.subtle{
+  color: var(--muted2);
+  font-size: 13px;
+}
+
+.rides{
+  margin-top: 10px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+.rideRow{
+  display:flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  align-items: flex-start;
+  border-top: 1px solid #eee;
+  background: #ffffff;
+}
+
+.rideRow:first-child{ border-top:none; }
+
+/* Completed rides: gray full-width rectangle */
+.rideRow.completed{
+  background: #f3f4f6;           /* light gray fill */
+  border-top: 1px solid #e5e7eb; /* subtle divider */
+}
+
+.rideMain{ flex:1; min-width: 0; width: 100%;}
+.rideName{
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.rideMeta{
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 13px;
+  display:flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.modeHint{ color: var(--muted2); }
+.modePill{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(11,15,20,.35);
+  color: var(--text);
+  font-size: 12px;
+  user-select:none;
+}
+.modePill strong{ font-weight: 750; }
+
+
+.rideActions{
+  display:flex;
+  width: 100%;
+  justify-content: flex-end;  /* right-align */
+  gap: 8px;
+  align-items:center;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+.smallBtn{
+  border: 1px solid var(--line);
+  background: rgba(11,15,20,.35);
+  color: var(--text);
+  border-radius: 12px;
+  padding: 7px 10px;
+  font-weight: 650;
+  font-size: 12px;
+}
+.smallBtn--spacer{
+  visibility: hidden;
+}
+
+
+.completed{
+  opacity: 1; /* keep text readable; gray background does the work */
+}
+
+.completedNote{
+  margin-top: 4px;
+  font-size: 13px;
+  color: #444;
+  line-height: 1.2;
+}
+/* Completed rides: combine completion text + Undo/Edit into one compact row */
+.completedMeta{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 1px;  /* tight spacing under ride name */
+  width: 100%; 
+}
+
+.completedMeta .completedNote{
+  margin-top: 0;      /* remove extra vertical space (it’s now inside completedMeta) */
+  flex: 1;
+  min-width: 0;
+}
+
+.completedMeta .smallBtn{
+  margin-left: auto; /* hard-pins button to the right */
+  flex-shrink: 0;
+}
+/* Completed rides no longer use the separate actions row */
+.rideRow.completed .rideActions{
+  display: none;
+}
+
+
+.completed .rideName{ text-decoration: none; }
+
+hr.sep{
+  border: none;
+  border-top: 1px solid var(--line);
+  margin: 12px 0;
+}
+
+.dialogBackdrop{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.55);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding: 14px;
+  z-index: 50;
+}
+.dialog{
+  width: min(560px, 100%);
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: rgba(16,23,35,.96);
+  box-shadow: 0 18px 50px rgba(0,0,0,.55);
+  padding: 14px;
+}
+.dialog h3{ margin: 0 0 8px 0; font-size: 16px; font-weight: 800; }
+.dialog p{ margin: 0 0 10px 0; color: var(--muted); }
+.radioList{ display:flex; flex-direction:column; gap: 8px; margin: 8px 0 12px 0; }
+.radioItem{
+  display:flex; gap:10px; align-items:center;
+  padding: 8px 10px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: rgba(11,15,20,.35);
+}
+.toast{
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 16px;
+  z-index: 60;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: rgba(16,23,35,.92);
+  color: var(--text);
+  font-size: 13px;
+  max-width: min(560px, calc(100% - 24px));
+
+}
+
+/* --- Saved Challenges table spacing --- */
+.dialog table{
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 2px; /* vertical space between rows */
+}
+
+.dialog th,
+.dialog td{
+  padding: 4px 6px;    /* touch-friendly tap targets */
+  vertical-align: middle;
+}
+
+.dialog td:last-child{
+  white-space: nowrap;  /* keep action buttons together */
+}
+
+/* Zebra striping for Saved Challenges tables */
+.dialog tbody tr:nth-child(odd){
+  background: #f3f4f6; /* very light gray */
+}
+
+.dialog tbody tr:nth-child(even){
+  background: #ffffff;
+}
+
+/* Saved Challenges table headers */
+.dialog thead th{
+  background: #6d28d9; /* purple-600 */
+  color: #ffffff;
+  font-weight: 600;
+  padding: 10px 12px;
+  text-align: left;
+}
+
+/* Center the Rides column header (matches body) */
+.dialog thead th:nth-child(2){
+  text-align: center;
+}
+
+/* Make header text/buttons readable on bold park color */
+.topbar, .topbar *{
+   color: #ffffff;
+}
+
+.parkSelect,
+.pill,
+.iconBtn{
+  border: 1px solid rgba(255,255,255,.35);
+  background: rgba(0,0,0,.18);
+  color: #fff;
+}
+
+.parkSelect option{
+  color: #000; /* dropdown list items */
+}
+
+/* Optional: make the brand dot unnecessary (can keep it) */
+.brand__dot{
+  background: rgba(255,255,255,.95);
+  box-shadow: 0 0 0 4px rgba(255,255,255,.22);
+}
+
+.bottombar{
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 18px;          /* tweak if you want thicker/thinner */
+  background: var(--park);
+  z-index: 10;
+}
+.app{
+  padding-bottom: 60px;  /* keeps content above footer */
+}
+
+/* --- Ride line buttons --- */
+.lineButtons{
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+  justify-content: flex-start;
+  flex-wrap: nowrap; /* IMPORTANT: keep on one line */
+  overflow-x: auto;  /* safety on very small screens */
+}
+
+/* When only Standby button exists, keep it left-aligned */
+.lineButtons.one{
+  justify-content: flex-start;
+}
+
+
+
+.lineButtons.two{
+  grid-template-columns: 1fr 1fr;
+}
+
+.lineButtons.three{
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.lineBtn{
+  width: 92px;              /* fits 3 across on mobile */
+  padding: 7px 6px;
+  border-radius: 8px;
+  border: 2px solid var(--park);
+  background: #ffffff;
+  color: var(--park);
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+  white-space: nowrap;      /* SINGLE LINE TEXT */
+  line-height: 1.1;
+  cursor: pointer;
+}
+
+
+.lineBtn:hover{
+  background: rgba(0,0,0,.04);
+}
+
+.lineBtn.selected{
+  background: var(--park);
+  color: #ffffff;
+  border-color: var(--park);
+}
+
+.lineBtn.disabled{
+  opacity: .35;
+  cursor: default;
+}
+
+/* Start / landing page text should be dark */
+.startPage,
+.startPage *{
+  color: #111;
+}
+
+/* Force Start page text to black */
+.startPage{
+  color: #111;
+}
+
+.startPage *{
+  color: #111 !important;
+}
+
+body.inChallenge #appTitle { 
+  display: none !important; 
+}
+
+
+@media (max-width: 420px){
+  .rideRow{
+    padding: 10px;
+  }
+}
+
+
+/* --- Dialog / popup contrast fixes (mobile friendly) --- */
+.dialogBackdrop{
+  background: rgba(0,0,0,.45);
+}
+
+.dialog{
+  background: #ffffff !important;
+  color: #111827 !important;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 12px 30px rgba(0,0,0,.25);
+}
+/* --- Dialog readability fixes (Settings, Saved Challenges, etc) --- */
+.dialog{
+  color: #111827;
+}
+
+.dialog .dialogBody,
+.dialog .dialogBody *{
+  color: #111827;
+}
+
+.dialog .label{
+  color: #111827; /* was var(--muted) which is too light */
+}
+
+/* Inputs inside dialogs: make fill white + border clearly visible */
+.dialog .textarea,
+.dialog .input{
+  background: #ffffff;
+  color: #111827;
+  border: 1px solid rgba(17, 24, 39, 0.35);  /* visible outline */
+}
+
+.dialog .textarea:focus,
+.dialog .input:focus{
+  border-color: rgba(17, 24, 39, 0.8);
+}
+.dialog h3{
+  color: #111827 !important;
+}
+
+.dialog p{
+  color: #374151 !important;
+}
+
+.dialog .btnRow{
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.dialog .btn{
+  background: #f3f4f6;
+  color: #111827;
+  border: 1px solid #e5e7eb;
+}
+
+.dialog .btn.btnPrimary{
+  background: var(--park);
+  border-color: var(--park);
+  color: #ffffff;
+}
+
+/* Start page readability: lighter inputs */
+.startPage .input,
+.startPage .textarea{
+  background: #ffffff;
+  color: #111827;
+  border: 1px solid #e5e7eb;
+}
+
+.startPage .textarea::placeholder,
+.startPage .input::placeholder{
+  color: #6b7280;
+}
+
+/* Allow primary buttons on Start page to keep white text */
+.startPage .btnPrimary{
+  color: #ffffff !important;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

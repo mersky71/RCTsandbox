@@ -1,0 +1,140 @@
+[
+  {"id":"mk_astro_orbiter","park":"mk","name":"Astro Orbiter","shortName":"AO","sortKey":"Astro Orbiter","ll":false,"sr":false,"active":true},
+  {"id":"mk_barnstormer","park":"mk","name":"The Barnstormer","shortName":"Barnstormer","sortKey":"Barnstormer","ll":true,"sr":false,"active":true},
+  {"id":"mk_btmr","park":"mk","name":"Big Thunder Mountain Railroad","shortName":"BTMR","sortKey":"Big Thunder Mountain Railroad","ll":true,"sr":false,"active":true},
+  {
+    "id":"mk_buzz",
+    "park":"mk",
+    "name":"Buzz Lightyear’s Space Ranger Spin",
+    "mediumName":"Buzz Lightyear",
+    "shortName":"Buzz",
+    "sortKey":"Buzz Lightyear’s Space Ranger Spin",
+    "ll":true,"sr":false,"active":true
+  },
+  {"id":"mk_dumbo","park":"mk","name":"Dumbo the Flying Elephant","shortName":"Dumbo","sortKey":"Dumbo the Flying Elephant","ll":true,"sr":false,"active":true},
+  {"id":"mk_haunted_mansion","park":"mk","name":"Haunted Mansion","shortName":"HM","sortKey":"Haunted Mansion","ll":true,"sr":false,"active":true},
+  {"id":"mk_iasw","park":"mk","name":"it’s a small world","shortName":"IASW","sortKey":"its a small world","ll":true,"sr":false,"active":true},
+  {"id":"mk_jungle_cruise","park":"mk","name":"Jungle Cruise","shortName":"JC","sortKey":"Jungle Cruise","ll":true,"sr":false,"active":true},
+  {"id":"mk_mad_tea_party","park":"mk","name":"Mad Tea Party","shortName":"Teacups","sortKey":"Mad Tea Party","ll":true,"sr":false,"active":true},
+ {
+  "id": "mk_magic_carpets",
+  "park": "mk",
+  "name": "The Magic Carpets of Aladdin",
+  "sortKey": "Magic Carpets of Aladdin",
+  "shortName": "Aladdin",
+  "mediumName": "Magic Carpets of Aladdin",
+  "ll": true,
+  "sr": false, "active":true
+ },
+  {"id":"mk_main_street_vehicles","park":"mk","name":"Main Street Vehicles","shortName":"MSV","sortKey":"Main Street Vehicles","ll":false,"sr":false,"active":true},
+  {
+    "id":"mk_pooh",
+    "park":"mk",
+    "name":"The Many Adventures of Winnie the Pooh",
+    "mediumName":"Winnie the Pooh",
+    "shortName":"Pooh",
+    "sortKey":"Many Adventures of Winnie the Pooh",
+    "ll":true,"sr":false,"active":true
+  },
+  {"id":"mk_peter_pan","park":"mk","name":"Peter Pan’s Flight","shortName":"PP","sortKey":"Peter Pans Flight","ll":true,"sr":false,"active":true},
+  {"id":"mk_pirates","park":"mk","name":"Pirates of the Caribbean","shortName":"POTC","sortKey":"Pirates of the Caribbean","ll":true,"sr":false,"active":true},
+  {"id":"mk_carrousel","park":"mk","name":"Prince Charming Regal Carrousel","shortName":"Carrousel","sortKey":"Prince Charming Regal Carrousel","ll":false,"sr":false,"active":true},
+  {"id":"mk_7dmt","park":"mk","name":"Seven Dwarfs Mine Train","shortName":"7DMT","sortKey":"Seven Dwarfs Mine Train","ll":true,"sr":false,"active":true},
+  {"id":"mk_space_mountain","park":"mk","name":"Space Mountain","shortName":"Space","sortKey":"Space Mountain","ll":true,"sr":false,"active":true},
+  {"id":"mk_tiana","park":"mk","name":"Tiana’s Bayou Adventure","shortName":"Tiana","sortKey":"Tianas Bayou Adventure","ll":true,"sr":false,"active":true},
+  {"id":"mk_speedway","park":"mk","name":"Tomorrowland Speedway","shortName":"Speedway","sortKey":"Tomorrowland Speedway","ll":true,"sr":false,"active":true},
+  {
+    "id":"mk_peoplemover",
+    "park":"mk",
+    "name":"Tomorrowland Transit Authority PeopleMover",
+    "mediumName":"PeopleMover",
+    "shortName":"PeopleMover",
+    "sortKey":"Tomorrowland Transit Authority PeopleMover",
+    "ll":false,"sr":false,"active":true
+  },
+  {"id":"mk_tron","park":"mk","name":"TRON Lightcycle / Run","shortName":"TRON","sortKey":"TRON Lightcycle / Run","ll":true,"sr":false,"active":true},
+  {
+    "id":"mk_mermaid",
+    "park":"mk",
+    "name":"Under the Sea – Journey of the Little Mermaid",
+    "mediumName":"Under the Sea",
+    "shortName":"Mermaid",
+    "sortKey":"Under the Sea – Journey of the Little Mermaid",
+    "ll":true,"sr":false,"active":true
+  },
+  {
+    "id":"mk_railroad",
+    "park":"mk",
+    "name":"Walt Disney World Railroad",
+    "mediumName":"Walt Disney World Railroad",
+    "shortName":"WDWRR",
+    "sortKey":"Walt Disney World Railroad",
+    "ll":false,"sr":false,"active":true
+  },
+  {"id":"mk_cop","park":"mk","name":"Walt Disney’s Carousel of Progress","shortName":"CoP","sortKey":"Walt Disneys Carousel of Progress","ll":false,"sr":false,"active":true},
+
+  {"id":"ep_frozen","park":"ep","name":"Frozen Ever After","shortName":"Frozen","sortKey":"Frozen Ever After","ll":true,"sr":false,"active":true},
+  {
+    "id":"ep_gft",
+    "park":"ep",
+    "name":"Gran Fiesta Tour Starring The Three Caballeros",
+    "mediumName":"Gran Fiesta Tour",
+    "shortName":"GFT",
+    "sortKey":"Gran Fiesta Tour Starring The Three Caballeros",
+    "ll":false,"sr":false,"active":true
+  },
+  {"id":"ep_gotg","park":"ep","name":"Guardians of the Galaxy: Cosmic Rewind","shortName":"GOTG","sortKey":"Guardians of the Galaxy: Cosmic Rewind","ll":true,"sr":false,"active":true},
+  {"id":"ep_figment","park":"ep","name":"Journey into Imagination with Figment","shortName":"Figment","sortKey":"Journey into Imagination with Figment","ll":true,"sr":false,"active":true},
+  {"id":"ep_lwtl","park":"ep","name":"Living with the Land","shortName":"LWTL","sortKey":"Living with the Land","ll":true,"sr":false,"active":true},
+  {"id":"ep_mission_space","park":"ep","name":"Mission: SPACE","shortName":"MS","sortKey":"Mission: SPACE","ll":true,"sr":false,"active":true},
+  {"id":"ep_remy","park":"ep","name":"Remy’s Ratatouille Adventure","shortName":"Remy","sortKey":"Remys Ratatouille Adventure","ll":true,"sr":true,"active":true},
+  {"id":"ep_soarin","park":"ep","name":"Soarin’ Around the World","shortName":"Soarin’","sortKey":"Soarin’ Around the World","ll":true,"sr":false,"active":true},
+  {"id":"ep_sse","park":"ep","name":"Spaceship Earth","shortName":"SSE","sortKey":"Spaceship Earth","ll":true,"sr":false,"active":true},
+  {"id":"ep_test_track","park":"ep","name":"Test Track","shortName":"TT","sortKey":"Test Track","ll":true,"sr":true,"active":true},
+  {"id":"ep_nemo","park":"ep","name":"The Seas with Nemo & Friends","shortName":"Nemo","sortKey":"Seas with Nemo & Friends","ll":true,"sr":false,"active":true},
+
+  {"id":"hs_saucers","park":"hs","name":"Alien Swirling Saucers","shortName":"Saucers","sortKey":"Alien Swirling Saucers","ll":true,"sr":false,"active":true},
+  {"id":"hs_mfsr","park":"hs","name":"Millennium Falcon: Smugglers Run","shortName":"MFSR","sortKey":"Millennium Falcon: Smugglers Run","ll":true,"sr":true,"active":true},
+  {
+    "id":"hs_mmrr",
+    "park":"hs",
+    "name":"Mickey & Minnie’s Runaway Railway",
+    "mediumName":"Runaway Railway",
+    "shortName":"MMRR",
+    "sortKey":"Mickey & Minnie’s Runaway Railway",
+    "ll":true,"sr":false,"active":true
+  },
+  {"id":"hs_rnrc","park":"hs","name":"Rock ’n’ Roller Coaster","shortName":"RnRC","sortKey":"Rock ’n’ Roller Coaster","ll":true,"sr":true,"active":true},
+  {"id":"hs_sdd","park":"hs","name":"Slinky Dog Dash","shortName":"SDD","sortKey":"Slinky Dog Dash","ll":true,"sr":false,"active":true},
+  {
+    "id":"hs_star_tours",
+    "park":"hs",
+    "name":"Star Tours – The Adventures Continue",
+    "mediumName":"Star Tours",
+    "shortName":"ST",
+    "sortKey":"Star Tours – The Adventures Continue",
+    "ll":true,"sr":false,"active":true
+  },
+  {
+    "id":"hs_rotr",
+    "park":"hs",
+    "name":"Star Wars: Rise of the Resistance",
+    "mediumName":"Rise of the Resistance",
+    "shortName":"ROTR",
+    "sortKey":"Star Wars: Rise of the Resistance",
+    "ll":true,"sr":true,"active":true
+  },
+  {"id":"hs_tot","park":"hs","name":"The Twilight Zone Tower of Terror","shortName":"ToT","sortKey":"Twilight Zone Tower of Terror","ll":true,"sr":false,"active":true},
+  {"id":"hs_tsm","park":"hs","name":"Toy Story Mania!","shortName":"TSM","sortKey":"Toy Story Mania!","ll":true,"sr":false,"active":true},
+
+  {"id":"ak_fop","park":"ak","name":"Avatar Flight of Passage","shortName":"FOP","sortKey":"Avatar Flight of Passage","ll":true,"sr":false,"active":true},
+  {"id":"ak_dinosaur","park":"ak","name":"DINOSAUR","shortName":"Dino","sortKey":"DINOSAUR","ll":true,"sr":false,"active":true},
+  {"id":"ak_ee","park":"ak","name":"Expedition Everest","shortName":"EE","sortKey":"Expedition Everest","ll":true,"sr":true,"active":true},
+  {"id":"ak_krr","park":"ak","name":"Kali River Rapids","shortName":"KRR","sortKey":"Kali River Rapids","ll":true,"sr":false,"active":true},
+  {"id":"ak_safari","park":"ak","name":"Kilimanjaro Safaris","shortName":"Safari","sortKey":"Kilimanjaro Safaris","ll":true,"sr":false,"active":true},
+  {"id":"ak_nrj","park":"ak","name":"Na’vi River Journey","shortName":"NRJ","sortKey":"Navi River Journey","ll":true,"sr":false,"active":true},
+  {"id":"ak_we_train","park":"ak","name":"Wildlife Express Train","shortName":"WE Train","sortKey":"Wildlife Express Train","ll":false,"sr":false,"active":true}
+]
+
+
+

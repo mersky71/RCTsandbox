@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Ride Challenge Tweet Generator</title>
+  <link rel="stylesheet" href="./css/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar__left">
+      <div class="brand">
+        <div class="brand__dot" aria-hidden="true"></div>
+        <div id="appTitle" class="brand__title">Ride Challenge Tweet Generator</div>
+      </div>
+    </div>
+
+    <div class="topbar__center">
+      <!-- Counter first (left of park selector) -->
+      <div id="counterPill" class="pill" aria-live="polite">Rides: —</div>
+
+      <label class="sr-only" for="parkSelect">Park</label>
+      <select id="parkSelect" class="parkSelect" disabled></select>
+    </div>
+
+    <div class="topbar__right">
+      <button id="moreBtn" class="iconBtn" type="button" aria-haspopup="menu" aria-expanded="false" title="More">
+        More
+      </button>
+      <div id="moreMenu" class="menu" role="menu" aria-hidden="true">
+        <!-- New menu option (JS will wire this up next) -->
+        <button id="settingsMenuBtn" class="menu__item" type="button">Settings (change tweet text)</button>
+        <button id="tweetUpdateMenuBtn" class="menu__item" role="menuitem" type="button">
+          Share an update
+        </button>
+        <button id="savedChallengesMenuBtn" class="menu__item" type="button">Saved Challenges</button>
+        <button id="endToStartBtn" class="menu__item" role="menuitem" type="button">
+          End today’s challenge and return to Start
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="app" class="app" role="main"></main>
+
+  <!-- Dialog host -->
+  <div id="dialogHost"></div>
+
+  <script type="module" src="./js/app.js"></script>
+  <footer class="bottombar" aria-hidden="true"></footer>
+</body>
+</html>
+
+
+
+
