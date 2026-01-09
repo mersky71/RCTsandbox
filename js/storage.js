@@ -6,6 +6,33 @@ const KEY_HISTORY = "erw_challengeHistory_v1";
 export const CUTOFF_HOUR = 3; // 3:00 AM local time
 export const MAX_RECENT_HISTORY = 20;
 
+/* ==========================
+   Challenge shape helpers
+   ========================== */
+
+function ensureChallengeShape(ch) {
+  if (!ch || typeof ch !== "object") return ch;
+
+  // Excluded rides for today's challenge scope
+  if (!Array.isArray(ch.excludedRideIds)) ch.excludedRideIds = [];
+
+  // Keep older objects compatible (some code reads top-level fields)
+  if (ch.settings && typeof ch.settings === "object") {
+    if (typeof ch.tagsText !== "string") ch.tagsText = ch.settings.tagsText ?? "";
+    if (typeof ch.fundraisingLink !== "string") ch.fundraisingLink = ch.settings.fundraisingLink ?? "";
+  }
+
+  // Ensure events array exists
+  if (!Array.isArray(ch.events)) ch.events = [];
+
+  return ch;
+}
+
+function ensureHistoryShape(arr) {
+  if (!Array.isArray(arr)) return [];
+  return arr.map(ensureChallengeShape);
+}
+
 export function dayKeyFor(date, cutoffHour = CUTOFF_HOUR) {
   // Challenge "day" is based on local time minus cutoff hours.
   const shifted = new Date(date.getTime() - cutoffHour * 60 * 60 * 1000);
@@ -18,7 +45,8 @@ export function dayKeyFor(date, cutoffHour = CUTOFF_HOUR) {
 export function loadActiveChallenge() {
   try {
     const raw = localStorage.getItem(KEY_ACTIVE);
-    return raw ? JSON.parse(raw) : null;
+    const parsed = raw ? JSON.parse(raw) : null;
+    return ensureChallengeShape(parsed);
   } catch {
     return null;
   }
@@ -35,7 +63,8 @@ export function clearActiveChallenge() {
 export function loadLastChallenge() {
   try {
     const raw = localStorage.getItem(KEY_LAST);
-    return raw ? JSON.parse(raw) : null;
+    const parsed = raw ? JSON.parse(raw) : null;
+    return ensureChallengeShape(parsed);
   } catch {
     return null;
   }
@@ -57,7 +86,7 @@ export function startNewChallenge({ tagsText, fundraisingLink }) {
   const now = new Date();
   const dayKey = dayKeyFor(now);
 
-  const challenge = {
+  const challenge = ensureChallengeShape({
     id: crypto.randomUUID(),
     dayKey,
     startedAt: now.toISOString(),
@@ -65,10 +94,12 @@ export function startNewChallenge({ tagsText, fundraisingLink }) {
       tagsText: tagsText ?? "",
       fundraisingLink: fundraisingLink ?? ""
     },
+    // NEW: excluded rides for today's scope
+    excludedRideIds: [],
     // Events are authoritative; numbering is derived from order.
     // event: { id, rideId, park, mode, timeISO, rideName }
     events: []
-  };
+  });
 
   saveActiveChallenge(challenge);
   return challenge;
@@ -93,7 +124,7 @@ export function loadChallengeHistory() {
   try {
     const raw = localStorage.getItem(KEY_HISTORY);
     const arr = raw ? JSON.parse(raw) : [];
-    return Array.isArray(arr) ? arr : [];
+    return ensureHistoryShape(Array.isArray(arr) ? arr : []);
   } catch {
     return [];
   }
@@ -111,7 +142,7 @@ function normalizeHistory(history) {
     if (!item || !item.id) continue;
     if (seen.has(item.id)) continue;
     seen.add(item.id);
-    out.push(item);
+    out.push(ensureChallengeShape(item));
   }
 
   const saved = out.filter(x => x.saved === true);
@@ -133,7 +164,7 @@ export function archiveChallengeToHistory(ch, { saved = false } = {}) {
   if (!ch || !ch.id) return;
 
   const now = new Date().toISOString();
-  const entry = safeClone(ch);
+  const entry = ensureChallengeShape(safeClone(ch));
 
   entry.endedAt = entry.endedAt || now;
   entry.saved = !!saved;
@@ -158,7 +189,7 @@ export function setChallengeSaved(id, saved = true) {
 
   const next = hist.map(h => {
     if (!h || h.id !== id) return h;
-    const copy = safeClone(h);
+    const copy = ensureChallengeShape(safeClone(h));
     copy.saved = !!saved;
     if (saved && !copy.savedAt) copy.savedAt = now;
     if (!saved) delete copy.savedAt;
