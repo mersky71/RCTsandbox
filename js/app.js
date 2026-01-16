@@ -465,10 +465,11 @@ function renderParkPage({ readOnly = false } = {}) {
     </div>
   `;
 
+  const excludedSet = getExcludedSetForActive();
+
   for (const r of parkRides) {
     const info = completedMap.get(r.id);
     const isCompleted = !!info;
-    const excludedSet = getExcludedSetForActive();
     const isExcluded = excludedSet.has(r.id);
 
     if (!readOnly) {
@@ -1090,6 +1091,7 @@ function escapeHtml(s) {
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 }
+
 
 
 
