@@ -318,7 +318,7 @@ function renderStartPage() {
       <span id="excludedCountText">Rides excluded: 0 of 0</span>
     </div>
     <div class="btnRow" style="margin-top:10px;">
-      <button id="excludedRidesBtn" class="btn" type="button">Excluded Rides</button>
+      <button id="excludedRidesBtn" class="btn btnPrimary" type="button">Excluded Rides</button>
     </div>
   </div>
 
@@ -329,10 +329,6 @@ function renderStartPage() {
       </div>
     </div>
   `;
-
-  document.getElementById("startBtn")?.addEventListener("click", () => {
-    const tagsText = document.getElementById("tagsText").value ?? "";
-    const fundraisingLink = document.getElementById("fundLink").value ?? "";
 
     // Update excluded counts on Start page
     const draftExcluded = new Set(loadExcludedDraftIds());
@@ -348,6 +344,12 @@ function renderStartPage() {
         parkFilter: new Set(["mk"])
       });
     });
+
+
+  
+  document.getElementById("startBtn")?.addEventListener("click", () => {
+    const tagsText = document.getElementById("tagsText").value ?? "";
+    const fundraisingLink = document.getElementById("fundLink").value ?? "";
 
 
     
@@ -1332,6 +1334,7 @@ function escapeHtml(s) {
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 }
+
 
 
 
