@@ -582,6 +582,13 @@ function renderCompletedText(mode, timeISO) {
 
 function logRide(ride, mode) {
   if (!active) return;
+ 
+    // Safety: don't allow logging rides excluded from today's challenge
+    const excludedSet = getExcludedSetForActive();
+    if (excludedSet.has(ride.id)) {
+      showToast("That ride is excluded from today's challenge.");
+      return;
+    }
 
   const now = new Date();
   const timeLabel = formatTime(now);
@@ -1083,6 +1090,7 @@ function escapeHtml(s) {
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 }
+
 
 
 
