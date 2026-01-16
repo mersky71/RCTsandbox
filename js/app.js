@@ -104,6 +104,10 @@ function setupParksDropdown() {
     if (active) renderParkPage({ readOnly: false });
   });
 }
+function getExcludedSetForActive() {
+  const ids = active?.excludedRideIds || active?.settings?.excludedRideIds || [];
+  return new Set(Array.isArray(ids) ? ids : []);
+}
 
 function setupMoreMenu() {
   moreBtn.addEventListener("click", (e) => {
@@ -487,11 +491,22 @@ function renderRideRow(r, completedMap, readOnly) {
   const info = completedMap.get(r.id);
   const completed = !!info;
 
+  // Excluded rides apply only if NOT completed
+  const excludedSet = getExcludedSetForActive();
+  const excluded = !completed && excludedSet.has(r.id);
+
   const hasLL = !!r.ll;
   const hasSR = !!r.sr;
 
   // Ride name is always just text now (actions happen via buttons)
   const nameHtml = `<p class="rideName">${escapeHtml(r.name)}</p>`;
+
+  // Row 2 for excluded rides
+  const excludedMetaHtml = excluded
+    ? `<div class="excludedMeta">
+         <div class="excludedNote">Excluded from today's challenge</div>
+       </div>`
+    : "";
 
   // Row 2 for completed rides: "- completed using ..."
   const completedText = completed ? renderCompletedText(info.event.mode, info.event.timeISO) : "";
@@ -504,7 +519,7 @@ function renderRideRow(r, completedMap, readOnly) {
 
   // Row 2 for uncompleted rides: ALWAYS show Standby; add LL/SR if applicable
   let buttonsHtml = "";
-  if (!completed) {
+  if (!completed && !excluded) {
     const colsClass = hasSR ? "three" : (hasLL ? "two" : "one");
 
     const standbyBtn = renderLineButton(r.id, "standby", "Standby Line", false, readOnly);
@@ -521,9 +536,10 @@ function renderRideRow(r, completedMap, readOnly) {
   }
 
   return `
-  <div class="rideRow ${completed ? "completed" : ""}" role="listitem">
+  <div class="rideRow ${completed ? "completed" : ""} ${excluded ? "excluded" : ""}" role="listitem">
     <div class="rideMain">
       ${nameHtml}
+      ${excludedMetaHtml}
       ${completedMetaHtml}
       ${buttonsHtml}
     </div>
@@ -1059,6 +1075,7 @@ function escapeHtml(s) {
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 }
+
 
 
 
