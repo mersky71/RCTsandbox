@@ -46,6 +46,30 @@ let ridesById = new Map();
 let active = null;
 let currentPark = "mk";
 
+
+// Draft excluded rides (chosen on Start page before a run begins)
+const KEY_EXCLUDED_DRAFT = "erw_excludedDraft_v1";
+
+function loadExcludedDraftIds() {
+  try {
+    const raw = localStorage.getItem(KEY_EXCLUDED_DRAFT);
+    const arr = raw ? JSON.parse(raw) : [];
+    return Array.isArray(arr) ? arr : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveExcludedDraftIds(ids) {
+  localStorage.setItem(KEY_EXCLUDED_DRAFT, JSON.stringify(ids));
+}
+
+function clearExcludedDraftIds() {
+  localStorage.removeItem(KEY_EXCLUDED_DRAFT);
+}
+
+
+
 init();
 
 async function init() {
@@ -276,15 +300,29 @@ function renderStartPage() {
         <div class="formRow">
           <div class="label">Tags and hashtags (modify as needed)</div>
           <textarea id="tagsText" class="textarea">#EveryRideWDW @RideEvery
-Help me support @GKTWVillage by donating at the link below</textarea>
+  
+  Help me support @GKTWVillage by donating at the link below</textarea>
         </div>
 
-        <div class="formRow" style="margin-top:12px;">
-          <div class="label">My fundraising link (modify as needed)</div>
-          <input id="fundLink" class="input" placeholder="https://..." />
-        </div>
+  <div class="formRow" style="margin-top:12px;">
+    <div class="label">My fundraising link (modify as needed)</div>
+    <input id="fundLink" class="input" placeholder="https://..." />
+  </div>
 
-        <div class="btnRow" style="margin-top:12px;">
+  <div class="card" style="margin-top:12px; border: 1px solid rgba(17,24,39,0.12);">
+    <div class="h1" style="font-size:16px;">Exclude rides (refurb / custom challenge)</div>
+    <p class="p" style="margin-top:6px;">
+      Click to modify rides excluded due to refurb or a custom challenge.
+    </p>
+    <div class="p" style="margin-top:6px; font-weight:700;">
+      <span id="excludedCountText">Rides excluded: 0 of 0</span>
+    </div>
+    <div class="btnRow" style="margin-top:10px;">
+      <button id="excludedRidesBtn" class="btn" type="button">Excluded Rides</button>
+    </div>
+  </div>
+
+  <div class="btnRow" style="margin-top:12px;">
           <button id="startBtn" class="btn btnPrimary" type="button">Start a new challenge</button>
           <button id="viewSavedBtn" class="btn btnPrimary" type="button">View Saved Challenges</button>
         </div>
@@ -296,8 +334,35 @@ Help me support @GKTWVillage by donating at the link below</textarea>
     const tagsText = document.getElementById("tagsText").value ?? "";
     const fundraisingLink = document.getElementById("fundLink").value ?? "";
 
+    // Update excluded counts on Start page
+    const draftExcluded = new Set(loadExcludedDraftIds());
+    const excludedCountText = document.getElementById("excludedCountText");
+    if (excludedCountText) {
+      excludedCountText.textContent = `Rides excluded: ${draftExcluded.size} of ${rides.length}`;
+    }
+
+    // Open Excluded Rides dialog (default filter: MK checked)
+    document.getElementById("excludedRidesBtn")?.addEventListener("click", () => {
+      openExcludedRidesDialog({
+        excludedIds: new Set(loadExcludedDraftIds()),
+        parkFilter: new Set(["mk"])
+      });
+    });
+
+
+    
     active = startNewChallenge({ tagsText, fundraisingLink });
 
+    // Copy “excluded rides” draft into the new active challenge
+    const excludedIds = loadExcludedDraftIds();
+    active.excludedRideIds = excludedIds;
+    active.settings = active.settings || {};
+    active.settings.excludedRideIds = excludedIds;
+
+    // Clear draft once the run starts (tomorrow starts fresh)
+    clearExcludedDraftIds();
+
+    
     // Make sure tweet builder can read these no matter where storage keeps them.
     active.tagsText = tagsText;
     active.fundraisingLink = fundraisingLink;
@@ -315,6 +380,182 @@ Help me support @GKTWVillage by donating at the link below</textarea>
   });
 
 }
+
+
+function openExcludedRidesDialog({ excludedIds, parkFilter }) {
+  const allParks = ["mk", "ep", "hs", "ak"];
+
+  const sortBySortKey = (a, b) =>
+    (a.sortKey || "").localeCompare(b.sortKey || "", "en", { sensitivity: "base" });
+
+  function rideLabel(r) {
+    return r.name || r.mediumName || r.shortName || "";
+  }
+
+  function renderPickRow(r, isExcluded) {
+    // checkbox + whole row tap
+    return `
+      <div data-pick="${r.id}"
+           style="display:flex;gap:10px;align-items:flex-start;padding:10px 10px;border:1px solid #e5e7eb;border-radius:12px;background:#f9fafb;cursor:pointer;">
+        <input type="checkbox" data-pickcb="${r.id}" ${isExcluded ? "checked" : ""}
+               style="margin-top:3px; transform: scale(1.1);" />
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:800;">${escapeHtml(rideLabel(r))}</div>
+          <div style="margin-top:2px;color:#6b7280;font-size:13px;">
+            ${isExcluded ? "Excluded from today" : "Tap to exclude"}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderParkFilters() {
+    const isAll = parkFilter.size === allParks.length;
+
+    const chip = (label, checked, attr) => `
+      <label style="display:inline-flex;gap:8px;align-items:center;padding:8px 10px;border:1px solid #e5e7eb;border-radius:999px;background:#ffffff;font-weight:800;">
+        <input type="checkbox" ${attr} ${checked ? "checked" : ""} />
+        <span>${label}</span>
+      </label>
+    `;
+
+    return `
+      <div class="formRow">
+        <div class="label">Parks to show (Included list)</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+          ${chip("All", isAll, `data-pall="1"`)}
+          ${chip("MK", parkFilter.has("mk"), `data-park="mk"`)}
+          ${chip("EP", parkFilter.has("ep"), `data-park="ep"`)}
+          ${chip("HS", parkFilter.has("hs"), `data-park="hs"`)}
+          ${chip("AK", parkFilter.has("ak"), `data-park="ak"`)}
+        </div>
+      </div>
+    `;
+  }
+
+  function renderContent() {
+    const excludedRides = rides.filter(r => excludedIds.has(r.id)).sort(sortBySortKey);
+
+    const includedRides =
+      parkFilter.size === 0
+        ? []
+        : rides
+            .filter(r => !excludedIds.has(r.id))
+            .filter(r => parkFilter.has(r.park))
+            .sort(sortBySortKey);
+
+    const excludedSection = `
+      <div style="margin-top:10px;font-weight:900;">Excluded from today's challenge (${excludedRides.length})</div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px;">
+        ${excludedRides.length ? excludedRides.map(r => renderPickRow(r, true)).join("") :
+          `<div style="padding:10px;color:#6b7280;">No rides excluded yet.</div>`}
+      </div>
+    `;
+
+    const includedSection = `
+      <div style="margin-top:14px;font-weight:900;">Included (tap to exclude)</div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px;">
+        ${
+          parkFilter.size === 0
+            ? `<div style="padding:10px;color:#6b7280;">Select at least 1 park</div>`
+            : (includedRides.length
+                ? includedRides.map(r => renderPickRow(r, false)).join("")
+                : `<div style="padding:10px;color:#6b7280;">No rides found for the selected parks.</div>`)
+        }
+      </div>
+    `;
+
+    return `
+      ${renderParkFilters()}
+      ${excludedSection}
+      ${includedSection}
+    `;
+  }
+
+  function updateStartPageCountIfPresent() {
+    const el = document.getElementById("excludedCountText");
+    if (el) el.textContent = `Rides excluded: ${excludedIds.size} of ${rides.length}`;
+  }
+
+  function rerenderBody() {
+    const body = document.getElementById("excludedDialogBody");
+    if (body) body.innerHTML = renderContent();
+    wireHandlers();
+  }
+
+  function persistDraft() {
+    saveExcludedDraftIds([...excludedIds]);
+    updateStartPageCountIfPresent();
+  }
+
+  function toggleRide(id) {
+    if (excludedIds.has(id)) excludedIds.delete(id);
+    else excludedIds.add(id);
+    persistDraft();
+    rerenderBody();
+  }
+
+  function wireHandlers() {
+    // Per-park toggles
+    document.querySelectorAll("[data-park]").forEach(cb => {
+      cb.addEventListener("change", () => {
+        const p = cb.getAttribute("data-park");
+        if (!p) return;
+        if (cb.checked) parkFilter.add(p);
+        else parkFilter.delete(p);
+        rerenderBody();
+      });
+    });
+
+    // All toggle
+    document.querySelector("[data-pall]")?.addEventListener("change", (e) => {
+      const checked = !!e.target.checked;
+      parkFilter = new Set(checked ? allParks : []);
+      rerenderBody();
+    });
+
+    // Row click toggles
+    document.querySelectorAll("[data-pick]").forEach(row => {
+      const id = row.getAttribute("data-pick");
+      if (!id) return;
+
+      row.addEventListener("click", (e) => {
+        if (e.target && e.target.matches && e.target.matches("input[type='checkbox']")) return;
+        toggleRide(id);
+      });
+
+      row.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          toggleRide(id);
+        }
+      });
+      row.tabIndex = 0;
+    });
+
+    // Checkbox toggles
+    document.querySelectorAll("[data-pickcb]").forEach(cb => {
+      cb.addEventListener("change", () => {
+        const id = cb.getAttribute("data-pickcb");
+        if (!id) return;
+        toggleRide(id);
+      });
+    });
+  }
+
+  openDialog({
+    title: "Rides excluded today",
+    body: "",
+    content: `<div id="excludedDialogBody">${renderContent()}</div>`,
+    buttons: [
+      { text: "Done", className: "btn btnPrimary", action: () => closeDialog() }
+    ]
+  });
+
+  wireHandlers();
+}
+
+
 
 /* ==========================
    Saved Challenges UI
@@ -1091,6 +1332,7 @@ function escapeHtml(s) {
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 }
+
 
 
 
