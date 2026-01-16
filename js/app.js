@@ -468,22 +468,30 @@ function renderParkPage({ readOnly = false } = {}) {
   for (const r of parkRides) {
     const info = completedMap.get(r.id);
     const isCompleted = !!info;
+    const excludedSet = getExcludedSetForActive();
+    const isExcluded = excludedSet.has(r.id);
 
     if (!readOnly) {
-      // Always wire standby; LL/SR only if present. Buttons only exist when NOT completed.
-      if (!isCompleted) {
-        document.querySelector(`[data-line="${r.id}:standby"]`)?.addEventListener("click", () => logRide(r, "standby"));
-        if (r.ll) document.querySelector(`[data-line="${r.id}:ll"]`)?.addEventListener("click", () => logRide(r, "ll"));
-        if (r.sr) document.querySelector(`[data-line="${r.id}:sr"]`)?.addEventListener("click", () => logRide(r, "sr"));
-      }
+    // Excluded rides have no buttons and no undo/edit
+    if (!isExcluded && !isCompleted) {
+      document.querySelector(`[data-line="${r.id}:standby"]`)?.addEventListener("click", () => logRide(r, "standby"));
+      if (r.ll) document.querySelector(`[data-line="${r.id}:ll"]`)?.addEventListener("click", () => logRide(r, "ll"));
+      if (r.sr) document.querySelector(`[data-line="${r.id}:sr"]`)?.addEventListener("click", () => logRide(r, "sr"));
+    }
 
-      // Undo/Edit button (only exists when completed)
+    if (!isExcluded) {
       document.querySelector(`[data-undo="${r.id}"]`)?.addEventListener("click", () => {
         const eventInfo = completedMap.get(r.id);
         if (!eventInfo) return;
         openUndoEditDialog(r, eventInfo);
       });
     }
+}
+
+    
+
+
+    
   }
 }
 
@@ -1075,6 +1083,7 @@ function escapeHtml(s) {
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 }
+
 
 
 
