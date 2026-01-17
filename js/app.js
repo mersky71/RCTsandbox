@@ -397,7 +397,7 @@ function renderPickRow(r, isExcluded) {
          style="display:flex;align-items:center;gap:10px;padding:8px 6px;cursor:pointer;">
       <input type="checkbox" data-pickcb="${r.id}" ${isExcluded ? "checked" : ""}
              style="transform: scale(1.1);" />
-      <div style="flex:1;min-width:0;font-weight:800;">
+      <div style="flex:1;min-width:0;font-weight:600;font-size:14px;">
         ${escapeHtml(rideLabel(r))}
       </div>
     </div>
@@ -551,6 +551,11 @@ function renderPickRow(r, isExcluded) {
       { text: "Done", className: "btn btnPrimary", action: () => closeDialog() }
     ]
   });
+  // Keep this dialog anchored to the top so it doesn't "recenter" when content changes
+  const backdrop = document.querySelector(".dialogBackdrop");
+  if (backdrop) backdrop.style.alignItems = "flex-start";
+  const dlg = document.querySelector(".dialog");
+  if (dlg) dlg.style.marginTop = "12px";
 
   wireHandlers();
 }
@@ -1332,6 +1337,7 @@ function escapeHtml(s) {
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 }
+
 
 
 
