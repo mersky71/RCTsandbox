@@ -25,10 +25,10 @@ const PARK_THEME = {
   home: { park: "#7c3aed", park2: "rgba(124,58,237,.12)", parkText: "#0b0f14" }, // Purple
 
   // Park themes
-  mk: { park: "#22d3ee", park2: "rgba(34,211,238,.12)", parkText: "#0b0f14" }, // Cyan
-  hs: { park: "#ff3ea5", park2: "rgba(255,62,165,.12)", parkText: "#0b0f14" }, // Magenta
-  ep: { park: "#fb923c", park2: "rgba(251,146,60,.12)", parkText: "#0b0f14" }, // Orange
-  ak: { park: "#166534", park2: "rgba(22,101,52,.12)", parkText: "#0b0f14" }  // Forest green
+  mk: { park: "#22d3ee", park2: "rgba(34,211,238,.26)", parkText: "#0b0f14" }, // Cyan
+  hs: { park: "#ff3ea5", park2: "rgba(255,62,165,.26)", parkText: "#0b0f14" }, // Magenta
+  ep: { park: "#fb923c", park2: "rgba(251,146,60,.26)", parkText: "#0b0f14" }, // Orange
+  ak: { park: "#166534", park2: "rgba(22,101,52,.26)", parkText: "#0b0f14" }  // Forest green
 };
 
 const appEl = document.getElementById("app");
@@ -368,7 +368,7 @@ function renderStartPage() {
 
         <div class="formRow">
           <div class="label">Tags and hashtags (modify as needed)</div>
-          <textarea id="tagsText" class="textarea" style="min-height:95px;">#EveryRideWDW @RideEvery
+          <textarea id="tagsText" class="textarea" style="min-height:80px;">#EveryRideWDW @RideEvery
   
 Help me support @GKTWVillage by donating at the link below</textarea>
         </div>
@@ -1476,4 +1476,5 @@ function escapeHtml(s) {
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 }
+
 
