@@ -46,7 +46,6 @@ let ridesById = new Map();
 let active = null;
 let currentPark = "mk";
 
-
 // Draft excluded rides (chosen on Start page before a run begins)
 const KEY_EXCLUDED_DRAFT = "erw_excludedDraft_v1";
 
@@ -68,8 +67,6 @@ function clearExcludedDraftIds() {
   localStorage.removeItem(KEY_EXCLUDED_DRAFT);
 }
 
-
-
 init();
 
 async function init() {
@@ -80,7 +77,6 @@ async function init() {
   rides = rides.filter(r => r.active !== false);
 
   ridesById = new Map(rides.map(r => [r.id, r]));
-  
 
   active = loadActiveChallenge();
 
@@ -99,15 +95,13 @@ async function init() {
     return;
   }
 
-  
   if (active) {
     setHeaderEnabled(true);
     currentPark = "mk";
     parkSelect.value = currentPark;
     applyParkTheme(currentPark);
     renderParkPage({ readOnly: false });
-
-    } else {
+  } else {
     renderStartPage();
     setHeaderEnabled(false);
     applyParkTheme("home");
@@ -128,6 +122,7 @@ function setupParksDropdown() {
     if (active) renderParkPage({ readOnly: false });
   });
 }
+
 function getExcludedSetForActive() {
   const ids = active?.excludedRideIds || active?.settings?.excludedRideIds || [];
   return new Set(Array.isArray(ids) ? ids : []);
@@ -145,6 +140,10 @@ function setupMoreMenu() {
     moreBtn.setAttribute("aria-expanded", "false");
     moreMenu.setAttribute("aria-hidden", "true");
   });
+
+  // Ensure "Excluded rides" exists in More menu (insert in correct order)
+  // Order (top->bottom): Share update, Tweet text, Excluded rides, Saved challenges, End challenge
+  ensureMoreMenuExcludedRidesItem();
 
   // Saved Challenges
   const savedChallengesMenuBtn = document.getElementById("savedChallengesMenuBtn");
@@ -210,6 +209,24 @@ function setupMoreMenu() {
     });
   });
 
+  // Excluded rides (mid-run)
+  const excludedRidesMenuBtn = document.getElementById("excludedRidesMenuBtn");
+  excludedRidesMenuBtn?.addEventListener("click", () => {
+    moreBtn.setAttribute("aria-expanded", "false");
+    moreMenu.setAttribute("aria-hidden", "true");
+
+    if (!active) {
+      showToast("Start a challenge first.");
+      return;
+    }
+
+    openExcludedRidesDialog({
+      excludedIds: getExcludedSetForActive(),
+      parkFilter: new Set([currentPark]),
+      persistMode: "active"
+    });
+  });
+
   // Tweet update (image) in More menu
   const tweetUpdateMenuBtn = document.getElementById("tweetUpdateMenuBtn");
   tweetUpdateMenuBtn?.addEventListener("click", async () => {
@@ -255,6 +272,61 @@ function setupMoreMenu() {
       }
     });
   });
+}
+
+function ensureMoreMenuExcludedRidesItem() {
+  if (!moreMenu) return;
+
+  // If already present in HTML, just ensure ordering is correct.
+  let btn = document.getElementById("excludedRidesMenuBtn");
+
+  if (!btn) {
+    btn = document.createElement("button");
+    btn.id = "excludedRidesMenuBtn";
+    btn.className = "menu__item";
+    btn.type = "button";
+    btn.textContent = "Excluded rides";
+  }
+
+  // Insert between settings and saved challenges
+  const settingsBtn = document.getElementById("settingsMenuBtn");
+  const savedBtn = document.getElementById("savedChallengesMenuBtn");
+
+  // If it’s already in the right place, do nothing
+  const isChild = btn.parentElement === moreMenu;
+  if (isChild) {
+    // If it's already immediately before savedBtn, great.
+    if (savedBtn && btn.nextElementSibling === savedBtn) return;
+    // Otherwise remove so we can reinsert correctly.
+    try { moreMenu.removeChild(btn); } catch {}
+  }
+
+  // Prefer inserting after settings button; fallback: before saved; fallback: append before endToStart
+  if (settingsBtn && settingsBtn.parentElement === moreMenu) {
+    if (settingsBtn.nextElementSibling) {
+      moreMenu.insertBefore(btn, settingsBtn.nextElementSibling);
+    } else {
+      moreMenu.appendChild(btn);
+    }
+    // If saved button exists and is now immediately after, we're good; otherwise, try to place before saved.
+    if (savedBtn && btn.nextElementSibling !== savedBtn) {
+      try { moreMenu.insertBefore(btn, savedBtn); } catch {}
+    }
+    return;
+  }
+
+  if (savedBtn && savedBtn.parentElement === moreMenu) {
+    moreMenu.insertBefore(btn, savedBtn);
+    return;
+  }
+
+  const endBtn = document.getElementById("endToStartBtn");
+  if (endBtn && endBtn.parentElement === moreMenu) {
+    moreMenu.insertBefore(btn, endBtn);
+    return;
+  }
+
+  moreMenu.appendChild(btn);
 }
 
 function setHeaderEnabled(enabled) {
@@ -327,29 +399,26 @@ Help me support @GKTWVillage by donating at the link below</textarea>
     </div>
   `;
 
-    // Update excluded counts on Start page
-    const draftExcluded = new Set(loadExcludedDraftIds());
-    const excludedCountText = document.getElementById("excludedCountText");
-    if (excludedCountText) {
-      excludedCountText.textContent = `Rides excluded: ${draftExcluded.size} of ${rides.length}`;
-    }
+  // Update excluded counts on Start page
+  const draftExcluded = new Set(loadExcludedDraftIds());
+  const excludedCountText = document.getElementById("excludedCountText");
+  if (excludedCountText) {
+    excludedCountText.textContent = `Rides excluded: ${draftExcluded.size} of ${rides.length}`;
+  }
 
-    // Open Excluded Rides dialog (default filter: MK checked)
-    document.getElementById("excludedRidesBtn")?.addEventListener("click", () => {
-      openExcludedRidesDialog({
-        excludedIds: new Set(loadExcludedDraftIds()),
-        parkFilter: new Set(["mk"])
-      });
+  // Open Excluded Rides dialog (default filter: MK checked)
+  document.getElementById("excludedRidesBtn")?.addEventListener("click", () => {
+    openExcludedRidesDialog({
+      excludedIds: new Set(loadExcludedDraftIds()),
+      parkFilter: new Set(["mk"]),
+      persistMode: "draft"
     });
+  });
 
-
-  
   document.getElementById("startBtn")?.addEventListener("click", () => {
     const tagsText = document.getElementById("tagsText").value ?? "";
     const fundraisingLink = document.getElementById("fundLink").value ?? "";
 
-
-    
     active = startNewChallenge({ tagsText, fundraisingLink });
 
     // Copy “excluded rides” draft into the new active challenge
@@ -361,7 +430,6 @@ Help me support @GKTWVillage by donating at the link below</textarea>
     // Clear draft once the run starts (tomorrow starts fresh)
     clearExcludedDraftIds();
 
-    
     // Make sure tweet builder can read these no matter where storage keeps them.
     active.tagsText = tagsText;
     active.fundraisingLink = fundraisingLink;
@@ -377,11 +445,9 @@ Help me support @GKTWVillage by donating at the link below</textarea>
   document.getElementById("viewSavedBtn")?.addEventListener("click", () => {
     openSavedChallengesDialog();
   });
-
 }
 
-
-function openExcludedRidesDialog({ excludedIds, parkFilter }) {
+function openExcludedRidesDialog({ excludedIds, parkFilter, persistMode = "draft" }) {
   if (!parkFilter || parkFilter.size === 0) parkFilter = new Set(["mk"]);
 
   const sortBySortKey = (a, b) =>
@@ -391,18 +457,18 @@ function openExcludedRidesDialog({ excludedIds, parkFilter }) {
     return r.mediumName || r.name || r.shortName || "";
   }
 
-function renderPickRow(r, isExcluded) {
-  return `
-    <div data-pick="${r.id}"
-         style="display:flex;align-items:center;gap:10px;padding:8px 6px;cursor:pointer;">
-      <input type="checkbox" data-pickcb="${r.id}" ${isExcluded ? "checked" : ""}
-             style="transform: scale(1.1);" />
-      <div style="flex:1;min-width:0;font-weight:600;font-size:14px;">
-        ${escapeHtml(rideLabel(r))}
+  function renderPickRow(r, isExcluded) {
+    return `
+      <div data-pick="${r.id}"
+           style="display:flex;align-items:center;gap:10px;padding:8px 6px;cursor:pointer;">
+        <input type="checkbox" data-pickcb="${r.id}" ${isExcluded ? "checked" : ""}
+               style="transform: scale(1.1);" />
+        <div style="flex:1;min-width:0;font-weight:600;font-size:14px;">
+          ${escapeHtml(rideLabel(r))}
+        </div>
       </div>
-    </div>
-  `;
-}
+    `;
+  }
 
   function renderParkFilters() {
     const chip = (label, checked, parkId) => `
@@ -447,9 +513,8 @@ function renderPickRow(r, isExcluded) {
             ${renderPickRow(r, true)}
           </div>
         `).join("")
-    : `<div style="padding:10px;color:#6b7280;">No rides excluded yet.</div>`}
-</div>
-
+          : `<div style="padding:10px;color:#6b7280;">No rides excluded yet.</div>`}
+      </div>
     `;
 
     const includedSection = `
@@ -492,10 +557,50 @@ function renderPickRow(r, isExcluded) {
     updateStartPageCountIfPresent();
   }
 
+  function persistActive() {
+    if (!active) return;
+
+    const idsArr = [...excludedIds];
+    active.excludedRideIds = idsArr;
+    active.settings = active.settings || {};
+    active.settings.excludedRideIds = idsArr;
+
+    saveActiveChallenge(active);
+
+    // Apply immediately to park pages
+    renderParkPage({ readOnly: false });
+  }
+
+  function canAddExclusionMidRun(rideId) {
+    if (!active) return true;
+    const completedMap = buildCompletedMap(active.events || []);
+    return !completedMap.has(rideId);
+  }
+
   function toggleRide(id) {
-    if (excludedIds.has(id)) excludedIds.delete(id);
-    else excludedIds.add(id);
-    persistDraft();
+    const isRemoving = excludedIds.has(id);
+
+    if (isRemoving) {
+      excludedIds.delete(id);
+      if (persistMode === "draft") persistDraft();
+      else persistActive();
+      rerenderBody();
+      return;
+    }
+
+    // Adding an exclusion
+    if (persistMode === "active") {
+      if (!canAddExclusionMidRun(id)) {
+        showToast("That ride is already completed. Undo the completion to exclude it.");
+        // Do not change state; keep UI consistent (checkbox won't flip)
+        rerenderBody();
+        return;
+      }
+    }
+
+    excludedIds.add(id);
+    if (persistMode === "draft") persistDraft();
+    else persistActive();
     rerenderBody();
   }
 
@@ -551,6 +656,7 @@ function renderPickRow(r, isExcluded) {
       { text: "Done", className: "btn btnPrimary", action: () => closeDialog() }
     ]
   });
+
   // Keep this dialog anchored to the top so it doesn't "recenter" when content changes
   const backdrop = document.querySelector(".dialogBackdrop");
   if (backdrop) backdrop.style.alignItems = "flex-start";
@@ -559,8 +665,6 @@ function renderPickRow(r, isExcluded) {
 
   wireHandlers();
 }
-
-
 
 /* ==========================
    Saved Challenges UI
@@ -583,11 +687,11 @@ function openSavedChallengesDialog() {
     const ridesCount = (ch.events?.length ?? 0);
 
     const viewBtn = `<button class="smallBtn" type="button" data-hview="${ch.id}">View</button>`;
-    
+
     const saveBtn = section === "recent"
       ? `<button class="smallBtn" type="button" data-hsave="${ch.id}">Save</button>`
       : `<button class="smallBtn smallBtn--spacer" type="button" disabled>Save</button>`;
-    
+
     const delBtn = `<button class="smallBtn" type="button" data-hdel="${ch.id}">Delete</button>`;
 
     return `
@@ -719,26 +823,21 @@ function renderParkPage({ readOnly = false } = {}) {
     const isExcluded = excludedSet.has(r.id);
 
     if (!readOnly) {
-    // Excluded rides have no buttons and no undo/edit
-    if (!isExcluded && !isCompleted) {
-      document.querySelector(`[data-line="${r.id}:standby"]`)?.addEventListener("click", () => logRide(r, "standby"));
-      if (r.ll) document.querySelector(`[data-line="${r.id}:ll"]`)?.addEventListener("click", () => logRide(r, "ll"));
-      if (r.sr) document.querySelector(`[data-line="${r.id}:sr"]`)?.addEventListener("click", () => logRide(r, "sr"));
+      // Excluded rides have no buttons and no undo/edit
+      if (!isExcluded && !isCompleted) {
+        document.querySelector(`[data-line="${r.id}:standby"]`)?.addEventListener("click", () => logRide(r, "standby"));
+        if (r.ll) document.querySelector(`[data-line="${r.id}:ll"]`)?.addEventListener("click", () => logRide(r, "ll"));
+        if (r.sr) document.querySelector(`[data-line="${r.id}:sr"]`)?.addEventListener("click", () => logRide(r, "sr"));
+      }
+
+      if (!isExcluded) {
+        document.querySelector(`[data-undo="${r.id}"]`)?.addEventListener("click", () => {
+          const eventInfo = completedMap.get(r.id);
+          if (!eventInfo) return;
+          openUndoEditDialog(r, eventInfo);
+        });
+      }
     }
-
-    if (!isExcluded) {
-      document.querySelector(`[data-undo="${r.id}"]`)?.addEventListener("click", () => {
-        const eventInfo = completedMap.get(r.id);
-        if (!eventInfo) return;
-        openUndoEditDialog(r, eventInfo);
-      });
-    }
-}
-
-    
-
-
-    
   }
 }
 
@@ -829,13 +928,13 @@ function renderCompletedText(mode, timeISO) {
 
 function logRide(ride, mode) {
   if (!active) return;
- 
-    // Safety: don't allow logging rides excluded from today's challenge
-    const excludedSet = getExcludedSetForActive();
-    if (excludedSet.has(ride.id)) {
-      showToast("That ride is excluded from today's challenge.");
-      return;
-    }
+
+  // Safety: don't allow logging rides excluded from today's challenge
+  const excludedSet = getExcludedSetForActive();
+  if (excludedSet.has(ride.id)) {
+    showToast("That ride is excluded from today's challenge.");
+    return;
+  }
 
   const now = new Date();
   const timeLabel = formatTime(now);
@@ -854,9 +953,9 @@ function logRide(ride, mode) {
   saveActiveChallenge(active);
 
   const llNumber =
-  mode === "ll"
-    ? (active?.events?.filter(e => e.mode === "ll").length || 0)
-    : null;
+    mode === "ll"
+      ? (active?.events?.filter(e => e.mode === "ll").length || 0)
+      : null;
 
   const tweetText = buildRideTweet({
     rideNumber,
@@ -866,7 +965,6 @@ function logRide(ride, mode) {
     llNumber
   });
 
-  
   openTweetDraft(tweetText);
   renderParkPage({ readOnly: false });
 }
@@ -1337,8 +1435,3 @@ function escapeHtml(s) {
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 }
-
-
-
-
-
