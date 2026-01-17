@@ -176,7 +176,7 @@ function setupMoreMenu() {
       content: `
         <div class="formRow">
           <div class="label">Tags and hashtags</div>
-          <textarea id="settingsTags" class="textarea" style="min-height:90px;">${escapeHtml(currentTags)}</textarea>
+          <textarea id="settingsTags" class="textarea" style="min-height:100px;">${escapeHtml(currentTags)}</textarea>
         </div>
         <div class="formRow" style="margin-top:10px;">
           <div class="label">My fundraising link</div>
@@ -287,10 +287,7 @@ function renderStartPage() {
           This experimental app helps track rides and generate draft tweets for an Every Ride Challenge.
         </p>
         <p class="p" style="margin-top:10px;">
-          It was vibe-coded with ChatGPT and may still have bugs, so please manage your expectations accordingly 🙂
-        </p>
-        <p class="p" style="margin-top:10px;">
-          If it breaks down on you, please be prepared to compose your ride tweets manually!
+          There may be bugs -- if it breaks down, please be prepared to compose ride tweets manually!
         </p>
       </div>
 
@@ -301,7 +298,7 @@ function renderStartPage() {
           <div class="label">Tags and hashtags (modify as needed)</div>
           <textarea id="tagsText" class="textarea">#EveryRideWDW @RideEvery
   
-  Help me support @GKTWVillage by donating at the link below</textarea>
+Help me support @GKTWVillage by donating at the link below</textarea>
         </div>
 
   <div class="formRow" style="margin-top:12px;">
@@ -385,13 +382,13 @@ function renderStartPage() {
 
 
 function openExcludedRidesDialog({ excludedIds, parkFilter }) {
-  const allParks = ["mk", "ep", "hs", "ak"];
+  if (!parkFilter || parkFilter.size === 0) parkFilter = new Set(["mk"]);
 
   const sortBySortKey = (a, b) =>
     (a.sortKey || "").localeCompare(b.sortKey || "", "en", { sensitivity: "base" });
 
   function rideLabel(r) {
-    return r.name || r.mediumName || r.shortName || "";
+    return r.mediumNname || r.name || r.shortName || "";
   }
 
 function renderPickRow(r, isExcluded) {
@@ -408,24 +405,23 @@ function renderPickRow(r, isExcluded) {
 }
 
   function renderParkFilters() {
-    const isAll = parkFilter.size === allParks.length;
-
-    const chip = (label, checked, attr) => `
+    const chip = (label, checked, parkId) => `
       <label style="display:inline-flex;gap:8px;align-items:center;padding:8px 10px;border:1px solid #e5e7eb;border-radius:999px;background:#ffffff;font-weight:800;">
-        <input type="checkbox" ${attr} ${checked ? "checked" : ""} />
+        <input type="radio" name="parkPick" data-park="${parkId}" ${checked ? "checked" : ""} />
         <span>${label}</span>
       </label>
     `;
 
+    // Exclusive selection: pick the first value if set, otherwise default to mk
+    const selected = parkFilter && parkFilter.size ? [...parkFilter][0] : "mk";
+
     return `
       <div class="formRow">
-        <div class="label">Parks to show (Included list)</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
-          ${chip("All", isAll, `data-pall="1"`)}
-          ${chip("MK", parkFilter.has("mk"), `data-park="mk"`)}
-          ${chip("EP", parkFilter.has("ep"), `data-park="ep"`)}
-          ${chip("HS", parkFilter.has("hs"), `data-park="hs"`)}
-          ${chip("AK", parkFilter.has("ak"), `data-park="ak"`)}
+          ${chip("MK", selected === "mk", "mk")}
+          ${chip("EP", selected === "ep", "ep")}
+          ${chip("HS", selected === "hs", "hs")}
+          ${chip("AK", selected === "ak", "ak")}
         </div>
       </div>
     `;
@@ -504,22 +500,14 @@ function renderPickRow(r, isExcluded) {
   }
 
   function wireHandlers() {
-    // Per-park toggles
-    document.querySelectorAll("[data-park]").forEach(cb => {
-      cb.addEventListener("change", () => {
-        const p = cb.getAttribute("data-park");
+    // Exclusive park selection (radio)
+    document.querySelectorAll('input[name="parkPick"][data-park]').forEach(rb => {
+      rb.addEventListener("change", () => {
+        const p = rb.getAttribute("data-park");
         if (!p) return;
-        if (cb.checked) parkFilter.add(p);
-        else parkFilter.delete(p);
+        parkFilter = new Set([p]);
         rerenderBody();
       });
-    });
-
-    // All toggle
-    document.querySelector("[data-pall]")?.addEventListener("change", (e) => {
-      const checked = !!e.target.checked;
-      parkFilter = new Set(checked ? allParks : []);
-      rerenderBody();
     });
 
     // Row click toggles
@@ -1344,6 +1332,7 @@ function escapeHtml(s) {
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 }
+
 
 
 
