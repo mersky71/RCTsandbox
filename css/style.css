@@ -31,8 +31,10 @@ body{
 
 
 .topbar{
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;  
   z-index: 20;
   display:flex;
   align-items:center;
@@ -125,7 +127,7 @@ body{
 .app{
   max-width: 880px;
   margin: 0 auto;
-  padding: 16px 12px 40px;
+  padding: 72px 12px 40px;
 }
 
 .card{
@@ -636,6 +638,7 @@ body.inChallenge #appTitle {
 .startPage .btnPrimary{
   color: #ffffff !important;
 }
+
 
 
 
