@@ -46,6 +46,11 @@ body{
   background: var(--park);
   border-bottom: none;
   backdrop-filter: none;
+
+ /* Fix “fixed header scrolls away” compositing bugs */
+  transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
 }
 
 .brand{
@@ -638,6 +643,7 @@ body.inChallenge #appTitle {
 .startPage .btnPrimary{
   color: #ffffff !important;
 }
+
 
 
 
