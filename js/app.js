@@ -394,22 +394,18 @@ function openExcludedRidesDialog({ excludedIds, parkFilter }) {
     return r.name || r.mediumName || r.shortName || "";
   }
 
-  function renderPickRow(r, isExcluded) {
-    // checkbox + whole row tap
-    return `
-      <div data-pick="${r.id}"
-           style="display:flex;gap:10px;align-items:flex-start;padding:10px 10px;border:1px solid #e5e7eb;border-radius:12px;background:#f9fafb;cursor:pointer;">
-        <input type="checkbox" data-pickcb="${r.id}" ${isExcluded ? "checked" : ""}
-               style="margin-top:3px; transform: scale(1.1);" />
-        <div style="flex:1;min-width:0;">
-          <div style="font-weight:800;">${escapeHtml(rideLabel(r))}</div>
-          <div style="margin-top:2px;color:#6b7280;font-size:13px;">
-            ${isExcluded ? "Excluded from today" : "Tap to exclude"}
-          </div>
-        </div>
+function renderPickRow(r, isExcluded) {
+  return `
+    <div data-pick="${r.id}"
+         style="display:flex;align-items:center;gap:10px;padding:8px 6px;cursor:pointer;">
+      <input type="checkbox" data-pickcb="${r.id}" ${isExcluded ? "checked" : ""}
+             style="transform: scale(1.1);" />
+      <div style="flex:1;min-width:0;font-weight:800;">
+        ${escapeHtml(rideLabel(r))}
       </div>
-    `;
-  }
+    </div>
+  `;
+}
 
   function renderParkFilters() {
     const isAll = parkFilter.size === allParks.length;
@@ -448,20 +444,30 @@ function openExcludedRidesDialog({ excludedIds, parkFilter }) {
 
     const excludedSection = `
       <div style="margin-top:10px;font-weight:900;">Excluded from today's challenge (${excludedRides.length})</div>
-      <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px;">
-        ${excludedRides.length ? excludedRides.map(r => renderPickRow(r, true)).join("") :
-          `<div style="padding:10px;color:#6b7280;">No rides excluded yet.</div>`}
-      </div>
+      <div style="margin-top:8px;border:1px solid #e5e7eb;border-radius:12px;background:#ffffff;overflow:hidden;">
+        ${excludedRides.length
+          ? excludedRides.map((r, idx) => `
+          <div style="${idx ? "border-top:1px solid #e5e7eb;" : ""}">
+            ${renderPickRow(r, true)}
+          </div>
+        `).join("")
+    : `<div style="padding:10px;color:#6b7280;">No rides excluded yet.</div>`}
+</div>
+
     `;
 
     const includedSection = `
       <div style="margin-top:14px;font-weight:900;">Included (tap to exclude)</div>
-      <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px;">
+      <div style="margin-top:8px;border:1px solid #e5e7eb;border-radius:12px;background:#ffffff;overflow:hidden;">
         ${
           parkFilter.size === 0
             ? `<div style="padding:10px;color:#6b7280;">Select at least 1 park</div>`
             : (includedRides.length
-                ? includedRides.map(r => renderPickRow(r, false)).join("")
+                ? includedRides.map((r, idx) => `
+                    <div style="${idx ? "border-top:1px solid #e5e7eb;" : ""}">
+                      ${renderPickRow(r, false)}
+                    </div>
+                  `).join("")
                 : `<div style="padding:10px;color:#6b7280;">No rides found for the selected parks.</div>`)
         }
       </div>
@@ -548,7 +554,11 @@ function openExcludedRidesDialog({ excludedIds, parkFilter }) {
   openDialog({
     title: "Rides excluded today",
     body: "",
-    content: `<div id="excludedDialogBody">${renderContent()}</div>`,
+    content: `
+      <div style="max-height:70vh; overflow:auto; padding-right:2px;">
+        <div id="excludedDialogBody">${renderContent()}</div>
+      </div>
+    `,
     buttons: [
       { text: "Done", className: "btn btnPrimary", action: () => closeDialog() }
     ]
@@ -1334,6 +1344,7 @@ function escapeHtml(s) {
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 }
+
 
 
 
