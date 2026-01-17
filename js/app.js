@@ -368,7 +368,7 @@ function renderStartPage() {
 
         <div class="formRow">
           <div class="label">Tags and hashtags (modify as needed)</div>
-          <textarea id="tagsText" class="textarea">#EveryRideWDW @RideEvery
+          <textarea id="tagsText" class="textarea" style="min-height:95px;">#EveryRideWDW @RideEvery
   
 Help me support @GKTWVillage by donating at the link below</textarea>
         </div>
@@ -381,7 +381,7 @@ Help me support @GKTWVillage by donating at the link below</textarea>
   <div class="card" style="margin-top:12px; border: 1px solid rgba(17,24,39,0.12);">
     <div class="h1" style="font-size:16px;">Exclude rides (refurb / custom challenge)</div>
     <p class="p" style="margin-top:6px;">
-      Click to modify rides excluded due to refurb or a custom challenge.
+      Click to exclude rides that are under refurb today, or to create a custom challenge.
     </p>
     <div class="p" style="margin-top:6px; font-weight:700;">
       <span id="excludedCountText">Rides excluded: 0 of 0</span>
@@ -793,6 +793,13 @@ function openSavedChallengesDialog() {
 /* ==========================
    Park page + ride logging
    ========================== */
+function getParkDisplayName(parkId) {
+  return PARKS.find(p => p.id === parkId)?.name || parkId;
+}
+
+function buildParkCompletionTweetMainText(parkName) {
+  return `✅ ${parkName} complete!`;
+}
 
 function renderParkPage({ readOnly = false } = {}) {
   if (!active) return;
@@ -806,17 +813,50 @@ function renderParkPage({ readOnly = false } = {}) {
   // Header pill text
   counterPill.textContent = `Rides: ${active.events.length}`;
 
-  // Park page now only shows ride list (no park banner card)
-  appEl.innerHTML = `
-    <div class="stack">
-      <div class="rides" role="list">
-        ${parkRides.map(r => renderRideRow(r, completedMap, readOnly)).join("")}
-      </div>
-    </div>
-  `;
-
   const excludedSet = getExcludedSetForActive();
 
+  // Park complete if every ride is either completed OR excluded
+  const parkComplete = parkRides.every(r => completedMap.has(r.id) || excludedSet.has(r.id));
+  const parkName = getParkDisplayName(currentPark);
+
+  const parkCompleteButtonHtml = parkComplete
+    ? `
+      <button
+        id="parkCompleteTweetBtn"
+        class="btn btnPrimary"
+        type="button"
+        style="width:100%;"
+      >${escapeHtml(`${parkName} complete! Click to tweet`)}</button>
+    `
+    : "";
+
+  // IMPORTANT: no UI change until complete (no placeholder spacing)
+  appEl.innerHTML = parkComplete
+    ? `
+      <div class="stack">
+        ${parkCompleteButtonHtml}
+        <div class="rides" role="list">
+          ${parkRides.map(r => renderRideRow(r, completedMap, readOnly)).join("")}
+        </div>
+      </div>
+    `
+    : `
+      <div class="stack">
+        <div class="rides" role="list">
+          ${parkRides.map(r => renderRideRow(r, completedMap, readOnly)).join("")}
+        </div>
+      </div>
+    `;
+
+  // Wire park completion tweet button (visible only when complete)
+  if (!readOnly && parkComplete) {
+    document.getElementById("parkCompleteTweetBtn")?.addEventListener("click", () => {
+      const mainText = buildParkCompletionTweetMainText(parkName);
+      openTweetDraft(mainText); // reuses the exact same suffix/formatting logic
+    });
+  }
+
+  // Wire ride row buttons / undo-edit
   for (const r of parkRides) {
     const info = completedMap.get(r.id);
     const isCompleted = !!info;
@@ -840,6 +880,7 @@ function renderParkPage({ readOnly = false } = {}) {
     }
   }
 }
+
 
 function renderRideRow(r, completedMap, readOnly) {
   const info = completedMap.get(r.id);
@@ -1435,3 +1476,4 @@ function escapeHtml(s) {
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 }
+
