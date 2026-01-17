@@ -388,7 +388,7 @@ function openExcludedRidesDialog({ excludedIds, parkFilter }) {
     (a.sortKey || "").localeCompare(b.sortKey || "", "en", { sensitivity: "base" });
 
   function rideLabel(r) {
-    return r.mediumNname || r.name || r.shortName || "";
+    return r.mediumName || r.name || r.shortName || "";
   }
 
 function renderPickRow(r, isExcluded) {
@@ -1337,6 +1337,7 @@ function escapeHtml(s) {
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 }
+
 
 
 
