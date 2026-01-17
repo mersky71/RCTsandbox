@@ -132,7 +132,7 @@ body{
 .app{
   max-width: 880px;
   margin: 0 auto;
-  padding: 72px 12px 40px;
+  padding: 56px 12px 40px;
 }
 
 .card{
@@ -643,6 +643,7 @@ body.inChallenge #appTitle {
 .startPage .btnPrimary{
   color: #ffffff !important;
 }
+
 
 
 
