@@ -153,8 +153,6 @@ function setupMoreMenu() {
     moreMenu.setAttribute("aria-hidden", "true");
     openSavedChallengesDialog();
   });
-  const tweetTextMenuBtn = document.getElementById("tweetTextMenuBtn");
-  const excludedRidesMenuBtn = document.getElementById("excludedRidesMenuBtn");
 
   // Settings
   const settingsMenuBtn = document.getElementById("settingsMenuBtn");
@@ -218,8 +216,6 @@ function setupMoreMenu() {
     moreBtn.setAttribute("aria-expanded", "false");
     moreMenu.setAttribute("aria-hidden", "true");
 
-
-    
     if (!active || !active.events || active.events.length === 0) {
       showToast("Log at least one ride first.");
       return;
@@ -234,52 +230,6 @@ function setupMoreMenu() {
     }
   });
 
-    // Tweet text (opens a tweet draft for the most recent ride)
-  tweetTextMenuBtn?.addEventListener("click", () => {
-    moreBtn.setAttribute("aria-expanded", "false");
-    moreMenu.setAttribute("aria-hidden", "true");
-
-    if (!active || !active.events || active.events.length === 0) {
-      showToast("Log at least one ride first.");
-      return;
-    }
-
-    const lastIdx = active.events.length - 1;
-    const e = active.events[lastIdx];
-
-    const rideNumber = lastIdx + 1;
-    const rideName = e.rideName || ridesById.get(e.rideId)?.name || "Ride";
-    const mode = e.mode || "standby";
-    const timeLabel = e.timeISO ? formatTime(new Date(e.timeISO)) : formatTime(new Date());
-
-    const llNumber =
-      mode === "ll"
-        ? (active.events.slice(0, lastIdx + 1).filter(x => x.mode === "ll").length || 0)
-        : null;
-
-    const tweetText = buildRideTweet({ rideNumber, rideName, mode, timeLabel, llNumber });
-    openTweetDraft(tweetText);
-  });
-
-  // Excluded rides (mid-run)
-  excludedRidesMenuBtn?.addEventListener("click", () => {
-    moreBtn.setAttribute("aria-expanded", "false");
-    moreMenu.setAttribute("aria-hidden", "true");
-
-    if (!active) {
-      showToast("Start a challenge first.");
-      return;
-    }
-
-    openExcludedRidesDialog({
-      excludedIds: new Set(getExcludedSetForActive()),
-      parkFilter: new Set([currentPark || "mk"]),
-      mode: "active"
-    });
-  });
-
-
-  
   // End challenge (auto-save into history as "Recent")
   endToStartBtn.addEventListener("click", () => {
     moreBtn.setAttribute("aria-expanded", "false");
@@ -438,7 +388,7 @@ function openExcludedRidesDialog({ excludedIds, parkFilter }) {
     (a.sortKey || "").localeCompare(b.sortKey || "", "en", { sensitivity: "base" });
 
   function rideLabel(r) {
-    return r.mediumName || r.name || r.shortName || "";
+    return r.mediumNname || r.name || r.shortName || "";
   }
 
 function renderPickRow(r, isExcluded) {
@@ -537,42 +487,17 @@ function renderPickRow(r, isExcluded) {
     wireHandlers();
   }
 
-  function persist() {
-    if (mode === "active") {
-      if (!active) return;
-
-      const idsArr = [...excludedIds];
-      active.excludedRideIds = idsArr;
-      active.settings = active.settings || {};
-      active.settings.excludedRideIds = idsArr;
-      saveActiveChallenge(active);
-
-      // Refresh the park page immediately so you see grayed-out rides right away
-      renderParkPage({ readOnly: false });
-      return;
-    }
-
-    // mode === "draft" (Start page)
+  function persistDraft() {
     saveExcludedDraftIds([...excludedIds]);
     updateStartPageCountIfPresent();
   }
 
   function toggleRide(id) {
-    // Mid-run rule: you can’t exclude a ride that’s already completed
-    if (mode === "active" && active?.events) {
-      const completedMap = buildCompletedMap(active.events);
-      if (!excludedIds.has(id) && completedMap.has(id)) {
-        showToast("To exclude a completed ride, Undo the completion first.");
-        return;
-      }
-    }
-
-  if (excludedIds.has(id)) excludedIds.delete(id);
-  else excludedIds.add(id);
-
-  persist();
-  rerenderBody();
-}
+    if (excludedIds.has(id)) excludedIds.delete(id);
+    else excludedIds.add(id);
+    persistDraft();
+    rerenderBody();
+  }
 
   function wireHandlers() {
     // Exclusive park selection (radio)
@@ -1412,26 +1337,6 @@ function escapeHtml(s) {
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
