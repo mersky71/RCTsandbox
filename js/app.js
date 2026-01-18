@@ -407,8 +407,8 @@ Help me support @GKTWVillage by donating at the link below</textarea>
         </div>
 
         <div class="btnRow" style="margin-top:12px;">
-          <button id="startBtn" class="btn btnPrimary" type="button">Start a new challenge</button>
-          <button id="viewSavedBtn" class="btn btnPrimary" type="button">View Saved Challenges</button>
+          <button id="startBtn" class="btn btnPrimary" type="button">Start new challenge</button>
+          <button id="viewSavedBtn" class="btn btnPrimary" type="button">Previous challenges</button>
         </div>
       </div>
     </div>
@@ -1503,6 +1503,7 @@ function escapeHtml(s) {
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 }
+
 
 
 
