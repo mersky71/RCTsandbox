@@ -400,7 +400,7 @@ Help me support @GKTWVillage by donating at the link below</textarea>
 
         <div class="card" style="margin-top:12px; border: 1px solid rgba(17,24,39,0.12);">
           <div class="h1" style="font-size:16px;">Exclude rides (refurb / custom challenge)</div>
-
+           <p class="p" style="margin-top:6px;"> Click to exclude rides that are not operating today, or to create a custom challenge. </p>
           <div class="btnRow" style="margin-top:10px;">
             <button id="excludedRidesBtn" class="btn btnPrimary" type="button">Rides excluded: 0 of 0</button>
           </div>
@@ -1503,6 +1503,7 @@ function escapeHtml(s) {
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 }
+
 
 
 
