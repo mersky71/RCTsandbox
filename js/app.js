@@ -72,6 +72,7 @@ init();
 async function init() {
   setupParksDropdown();
   setupMoreMenu();
+  setupAutoScrollToTopOnReturnIfParkComplete();
 
   rides = await fetch("./data/rides.json").then(r => r.json());
   rides = rides.filter(r => r.active !== false);
@@ -127,6 +128,25 @@ function getExcludedSetForActive() {
   const ids = active?.excludedRideIds || active?.settings?.excludedRideIds || [];
   return new Set(Array.isArray(ids) ? ids : []);
 }
+
+function setupAutoScrollToTopOnReturnIfParkComplete() {
+  const maybeScrollToTop = () => {
+    if (!active) return;
+    if (!isParkCompleteNow(currentPark)) return;
+    if (window.scrollY < 40) return; // don't jump if already near the top
+
+    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+  };
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") maybeScrollToTop();
+  });
+
+  window.addEventListener("focus", () => {
+    maybeScrollToTop();
+  });
+}
+
 
 function setupMoreMenu() {
   moreBtn.addEventListener("click", (e) => {
@@ -383,11 +403,12 @@ Help me support @GKTWVillage by donating at the link below</textarea>
     <p class="p" style="margin-top:6px;">
       Click to exclude rides that are under refurb today, or to create a custom challenge.
     </p>
-    <div class="p" style="margin-top:6px; font-weight:700;">
-      <span id="excludedCountText">Rides excluded: 0 of 0</span>
-    </div>
-    <div class="btnRow" style="margin-top:10px;">
-      <button id="excludedRidesBtn" class="btn btnPrimary" type="button">Excluded Rides</button>
+    <div class="card" style="margin-top:12px; border: 1px solid rgba(17,24,39,0.12);">
+      <div class="h1" style="font-size:16px;">Exclude rides (refurb / custom challenge)</div>
+
+      <div class="btnRow" style="margin-top:10px;">
+        <button id="excludedRidesBtn" class="btn btnPrimary" type="button">Rides excluded: 0 of 0</button>
+      </div>
     </div>
   </div>
 
@@ -401,9 +422,9 @@ Help me support @GKTWVillage by donating at the link below</textarea>
 
   // Update excluded counts on Start page
   const draftExcluded = new Set(loadExcludedDraftIds());
-  const excludedCountText = document.getElementById("excludedCountText");
-  if (excludedCountText) {
-    excludedCountText.textContent = `Rides excluded: ${draftExcluded.size} of ${rides.length}`;
+  const excludedBtn = document.getElementById("excludedRidesBtn");
+  if (excludedBtn) {
+    excludedBtn.textContent = `Rides excluded: ${draftExcluded.size} of ${rides.length}`;
   }
 
   // Open Excluded Rides dialog (default filter: MK checked)
@@ -542,8 +563,8 @@ function openExcludedRidesDialog({ excludedIds, parkFilter, persistMode = "draft
   }
 
   function updateStartPageCountIfPresent() {
-    const el = document.getElementById("excludedCountText");
-    if (el) el.textContent = `Rides excluded: ${excludedIds.size} of ${rides.length}`;
+    const btn = document.getElementById("excludedRidesBtn");
+    if (btn) btn.textContent = `Rides excluded: ${excludedIds.size} of ${rides.length}`;
   }
 
   function rerenderBody() {
@@ -801,6 +822,17 @@ function buildParkCompletionTweetMainText(parkName) {
   return `✅ ${parkName} complete!`;
 }
 
+function isParkCompleteNow(parkId) {
+  if (!active) return false;
+
+  const parkRides = rides.filter(r => r.park === parkId);
+  const completedMap = buildCompletedMap(active.events || []);
+  const excludedSet = getExcludedSetForActive();
+
+  return parkRides.every(r => completedMap.has(r.id) || excludedSet.has(r.id));
+}
+
+
 function renderParkPage({ readOnly = false } = {}) {
   if (!active) return;
 
@@ -821,13 +853,14 @@ function renderParkPage({ readOnly = false } = {}) {
 
   const parkCompleteButtonHtml = parkComplete
     ? `
-      <button
-        id="parkCompleteTweetBtn"
-        class="btn btnPrimary"
-        type="button"
-        style="width:100%;"
-      >${escapeHtml(`${parkName} complete! Click to tweet`)}</button>
-    `
+        <div style="display:flex; justify-content:center;">
+          <button
+            id="parkCompleteTweetBtn"
+            class="btn btnPrimary"
+            type="button"
+          >${escapeHtml(`${parkName} complete! Click to tweet`)}</button>
+        </div>
+      `
     : "";
 
   // IMPORTANT: no UI change until complete (no placeholder spacing)
@@ -1476,5 +1509,6 @@ function escapeHtml(s) {
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 }
+
 
 
