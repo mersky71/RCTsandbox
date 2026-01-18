@@ -393,26 +393,20 @@ function renderStartPage() {
 Help me support @GKTWVillage by donating at the link below</textarea>
         </div>
 
-  <div class="formRow" style="margin-top:12px;">
-    <div class="label">My fundraising link (modify as needed)</div>
-    <input id="fundLink" class="input" placeholder="https://..." />
-  </div>
+        <div class="formRow" style="margin-top:12px;">
+          <div class="label">My fundraising link (modify as needed)</div>
+          <input id="fundLink" class="input" placeholder="https://..." />
+        </div>
 
-  <div class="card" style="margin-top:12px; border: 1px solid rgba(17,24,39,0.12);">
-    <div class="h1" style="font-size:16px;">Exclude rides (refurb / custom challenge)</div>
-    <p class="p" style="margin-top:6px;">
-      Click to exclude rides that are under refurb today, or to create a custom challenge.
-    </p>
-    <div class="card" style="margin-top:12px; border: 1px solid rgba(17,24,39,0.12);">
-      <div class="h1" style="font-size:16px;">Exclude rides (refurb / custom challenge)</div>
+        <div class="card" style="margin-top:12px; border: 1px solid rgba(17,24,39,0.12);">
+          <div class="h1" style="font-size:16px;">Exclude rides (refurb / custom challenge)</div>
 
-      <div class="btnRow" style="margin-top:10px;">
-        <button id="excludedRidesBtn" class="btn btnPrimary" type="button">Rides excluded: 0 of 0</button>
-      </div>
-    </div>
-  </div>
+          <div class="btnRow" style="margin-top:10px;">
+            <button id="excludedRidesBtn" class="btn btnPrimary" type="button">Rides excluded: 0 of 0</button>
+          </div>
+        </div>
 
-  <div class="btnRow" style="margin-top:12px;">
+        <div class="btnRow" style="margin-top:12px;">
           <button id="startBtn" class="btn btnPrimary" type="button">Start a new challenge</button>
           <button id="viewSavedBtn" class="btn btnPrimary" type="button">View Saved Challenges</button>
         </div>
@@ -853,12 +847,12 @@ function renderParkPage({ readOnly = false } = {}) {
 
   const parkCompleteButtonHtml = parkComplete
     ? `
-        <div style="display:flex; justify-content:center;">
+        <div style="display:flex; justify-content:center; margin-top:16px;">
           <button
             id="parkCompleteTweetBtn"
             class="btn btnPrimary"
             type="button"
-          >${escapeHtml(`${parkName} complete! Click to tweet`)}</button>
+          >${escapeHtml(`${parkName} complete! Click to tweet`)}</button>   
         </div>
       `
     : "";
@@ -1509,6 +1503,7 @@ function escapeHtml(s) {
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 }
+
 
 
 
