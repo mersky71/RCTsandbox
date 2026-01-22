@@ -9,8 +9,14 @@ import {
   archiveChallengeToHistory,
   loadChallengeHistory,
   setChallengeSaved,
-  deleteChallengeFromHistory
+  deleteChallengeFromHistory,
+  getMostRecentHistoryChallenge,
+  popMostRecentHistoryChallenge,
+  getChallengeLastActivityISO,
+  hoursSinceISO
 } from "./storage.js";
+
+const RESUME_WINDOW_HOURS = 36;
 
 const PARKS = [
   { id: "mk", name: "Magic Kingdom" },
@@ -370,7 +376,61 @@ function applyParkTheme(parkId) {
   document.documentElement.style.setProperty("--parkText", t.parkText);
 }
 
+
+
+function getResumeCandidate() {
+  const mostRecent = getMostRecentHistoryChallenge();
+  if (!mostRecent) return null;
+
+  const lastISO = getChallengeLastActivityISO(mostRecent);
+  const hoursAgo = hoursSinceISO(lastISO);
+
+  if (!(hoursAgo <= RESUME_WINDOW_HOURS)) return null;
+
+  const ridesCount = Array.isArray(mostRecent.events) ? mostRecent.events.length : 0;
+  if (ridesCount <= 0) return null;
+
+  const lastDate = lastISO ? new Date(lastISO) : null;
+  const lastActivityLabel = lastDate ? `${formatDateShort(lastDate)} at ${formatTime(lastDate)}` : "Unknown";
+
+  return { challenge: mostRecent, lastISO, hoursAgo, ridesCount, lastActivityLabel };
+}
+
+function handleResumeMostRecent() {
+  const ch = popMostRecentHistoryChallenge();
+  if (!ch) {
+    showToast("No recent run available to resume.");
+    return;
+  }
+
+  // Re-open: clear “ended” / “saved” markers so it behaves like an active run.
+  delete ch.endedAt;
+  delete ch.saved;
+  delete ch.savedAt;
+
+  // Ensure required fields exist
+  ch.events = Array.isArray(ch.events) ? ch.events : [];
+  ch.settings = ch.settings || {};
+
+  active = ch;
+  saveActiveChallenge(active);
+
+  render();
+}
 function renderStartPage() {
+  const resumeCandidate = getResumeCandidate();
+  const resumeCardHtml = resumeCandidate ? `
+      <div class="card">
+        <div class="h1">Resume most recent run</div>
+        <p class="p" style="margin-top:6px;">
+          Last activity: ${escapeHtml(resumeCandidate.lastActivityLabel)} · ${resumeCandidate.ridesCount} ride${resumeCandidate.ridesCount === 1 ? "" : "s"}
+        </p>
+        <div class="btnRow" style="margin-top:12px;">
+          <button id="resumeMostRecentBtn" class="btn btnPrimary" type="button">Resume</button>
+        </div>
+      </div>
+  ` : "";
+
   appEl.innerHTML = `
     <div class="stack startPage">
       <div class="card">
@@ -382,6 +442,8 @@ function renderStartPage() {
           There may be bugs -- if it breaks down, please be prepared to compose ride tweets manually!
         </p>
       </div>
+
+      ${resumeCardHtml}
 
       <div class="card">
         <div class="h1">Start a new challenge</div>
@@ -429,6 +491,24 @@ Help me support @GKTWVillage by donating at the link below</textarea>
       persistMode: "draft"
     });
   });
+
+  // Resume most recent run (from Saved or Recent history)
+  document.getElementById("resumeMostRecentBtn")?.addEventListener("click", () => {
+    const candidate = getResumeCandidate();
+    if (!candidate) return;
+
+    openConfirmDialog({
+      title: "Resume most recent run?",
+      body:
+        `Last activity: ${candidate.lastActivityLabel}\n` +
+        `${candidate.ridesCount} ride${candidate.ridesCount === 1 ? "" : "s"} logged\n\n` +
+        "Resuming will remove this run from Previous challenges and continue it.",
+      confirmText: "Resume run",
+      confirmClass: "",
+      onConfirm: () => handleResumeMostRecent()
+    });
+  });
+
 
   document.getElementById("startBtn")?.addEventListener("click", () => {
     const tagsText = document.getElementById("tagsText").value ?? "";
@@ -516,996 +596,4 @@ function openExcludedRidesDialog({ excludedIds, parkFilter, persistMode = "draft
         ? []
         : rides
             .filter(r => !excludedIds.has(r.id))
-            .filter(r => parkFilter.has(r.park))
-            .sort(sortBySortKey);
-
-    const excludedSection = `
-      <div style="margin-top:10px;font-weight:900;">Excluded from today's challenge (${excludedRides.length})</div>
-      <div style="margin-top:8px;border:1px solid #e5e7eb;border-radius:12px;background:#ffffff;overflow:hidden;">
-        ${excludedRides.length
-          ? excludedRides.map((r, idx) => `
-          <div style="${idx ? "border-top:1px solid #e5e7eb;" : ""}">
-            ${renderPickRow(r, true)}
-          </div>
-        `).join("")
-          : `<div style="padding:10px;color:#6b7280;">No rides excluded yet.</div>`}
-      </div>
-    `;
-
-    const includedSection = `
-      <div style="margin-top:14px;font-weight:900;">Included (tap to exclude)</div>
-      <div style="margin-top:8px;border:1px solid #e5e7eb;border-radius:12px;background:#ffffff;overflow:hidden;">
-        ${
-          parkFilter.size === 0
-            ? `<div style="padding:10px;color:#6b7280;">Select at least 1 park</div>`
-            : (includedRides.length
-                ? includedRides.map((r, idx) => `
-                    <div style="${idx ? "border-top:1px solid #e5e7eb;" : ""}">
-                      ${renderPickRow(r, false)}
-                    </div>
-                  `).join("")
-                : `<div style="padding:10px;color:#6b7280;">No rides found for the selected parks.</div>`)
-        }
-      </div>
-    `;
-
-    return `
-      ${renderParkFilters()}
-      ${excludedSection}
-      ${includedSection}
-    `;
-  }
-
-  function updateStartPageCountIfPresent() {
-    const btn = document.getElementById("excludedRidesBtn");
-    if (btn) btn.textContent = `Rides excluded: ${excludedIds.size} of ${rides.length}`;
-  }
-
-  function rerenderBody() {
-    const body = document.getElementById("excludedDialogBody");
-    if (body) body.innerHTML = renderContent();
-    wireHandlers();
-  }
-
-  function persistDraft() {
-    saveExcludedDraftIds([...excludedIds]);
-    updateStartPageCountIfPresent();
-  }
-
-  function persistActive() {
-    if (!active) return;
-
-    const idsArr = [...excludedIds];
-    active.excludedRideIds = idsArr;
-    active.settings = active.settings || {};
-    active.settings.excludedRideIds = idsArr;
-
-    saveActiveChallenge(active);
-
-    // Apply immediately to park pages
-    renderParkPage({ readOnly: false });
-  }
-
-  function canAddExclusionMidRun(rideId) {
-    if (!active) return true;
-    const completedMap = buildCompletedMap(active.events || []);
-    return !completedMap.has(rideId);
-  }
-
-  function toggleRide(id) {
-    const isRemoving = excludedIds.has(id);
-
-    if (isRemoving) {
-      excludedIds.delete(id);
-      if (persistMode === "draft") persistDraft();
-      else persistActive();
-      rerenderBody();
-      return;
-    }
-
-    // Adding an exclusion
-    if (persistMode === "active") {
-      if (!canAddExclusionMidRun(id)) {
-        showToast("That ride is already completed. Undo the completion to exclude it.");
-        // Do not change state; keep UI consistent (checkbox won't flip)
-        rerenderBody();
-        return;
-      }
-    }
-
-    excludedIds.add(id);
-    if (persistMode === "draft") persistDraft();
-    else persistActive();
-    rerenderBody();
-  }
-
-  function wireHandlers() {
-    // Exclusive park selection (radio)
-    document.querySelectorAll('input[name="parkPick"][data-park]').forEach(rb => {
-      rb.addEventListener("change", () => {
-        const p = rb.getAttribute("data-park");
-        if (!p) return;
-        parkFilter = new Set([p]);
-        rerenderBody();
-      });
-    });
-
-    // Row click toggles
-    document.querySelectorAll("[data-pick]").forEach(row => {
-      const id = row.getAttribute("data-pick");
-      if (!id) return;
-
-      row.addEventListener("click", (e) => {
-        if (e.target && e.target.matches && e.target.matches("input[type='checkbox']")) return;
-        toggleRide(id);
-      });
-
-      row.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          toggleRide(id);
-        }
-      });
-      row.tabIndex = 0;
-    });
-
-    // Checkbox toggles
-    document.querySelectorAll("[data-pickcb]").forEach(cb => {
-      cb.addEventListener("change", () => {
-        const id = cb.getAttribute("data-pickcb");
-        if (!id) return;
-        toggleRide(id);
-      });
-    });
-  }
-
-  openDialog({
-    title: "Rides excluded today",
-    body: "",
-    content: `
-      <div style="max-height:70vh; overflow:auto; padding-right:2px;">
-        <div id="excludedDialogBody">${renderContent()}</div>
-      </div>
-    `,
-    buttons: [
-      { text: "Done", className: "btn btnPrimary", action: () => closeDialog() }
-    ]
-  });
-
-  // Keep this dialog anchored to the top so it doesn't "recenter" when content changes
-  const backdrop = document.querySelector(".dialogBackdrop");
-  if (backdrop) backdrop.style.alignItems = "flex-start";
-  const dlg = document.querySelector(".dialog");
-  if (dlg) dlg.style.marginTop = "12px";
-
-  wireHandlers();
-}
-
-/* ==========================
-   Saved Challenges UI
-   ========================== */
-
-function openSavedChallengesDialog() {
-  const hist = loadChallengeHistory();
-
-  const sorted = [...hist].sort((a, b) => {
-    const ta = Date.parse(a.endedAt || a.startedAt || "") || 0;
-    const tb = Date.parse(b.endedAt || b.startedAt || "") || 0;
-    return tb - ta;
-  });
-
-  const saved = sorted.filter(x => x.saved === true);
-  const recent = sorted.filter(x => x.saved !== true).slice(0, 20);
-
-  const rowHtml = (ch, section) => {
-    const dateLabel = formatDayKeyLong(ch.dayKey);
-    const ridesCount = (ch.events?.length ?? 0);
-
-    const viewBtn = `<button class="smallBtn" type="button" data-hview="${ch.id}">View</button>`;
-
-    const saveBtn = section === "recent"
-      ? `<button class="smallBtn" type="button" data-hsave="${ch.id}">Save</button>`
-      : `<button class="smallBtn smallBtn--spacer" type="button" disabled>Save</button>`;
-
-    const delBtn = `<button class="smallBtn" type="button" data-hdel="${ch.id}">Delete</button>`;
-
-    return `
-      <tr>
-        <td style="white-space:nowrap;">${escapeHtml(dateLabel)}</td>
-        <td style="text-align:center; white-space:nowrap;">${ridesCount}</td>
-        <td style="white-space:nowrap; text-align:right;">
-          ${saveBtn}
-          ${viewBtn}
-          ${delBtn}
-        </td>
-      </tr>
-    `;
-  };
-
-  const tableHtml = (title, rowsHtml) => `
-    <div style="margin-top:10px;">
-      <div style="font-weight:700; margin:8px 0;">${escapeHtml(title)}</div>
-      <div style="overflow:auto; border:1px solid #e5e7eb; border-radius:12px;">
-        <table style="width:100%; border-collapse:collapse;">
-          <thead>
-            <tr style="background:#f3f4f6;">
-              <th style="text-align:left; padding:10px;">Date</th>
-              <th style="text-align:center; padding:10px;">Rides</th>
-              <th style="text-align:right; padding:10px;">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${rowsHtml || `<tr><td colspan="3" style="padding:12px; color:#6b7280;">None yet.</td></tr>`}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  `;
-
-  openDialog({
-    title: "Challenges Saved on this Device",
-    body: "",
-    content: `
-      ${tableHtml("Saved", saved.map(ch => rowHtml(ch, "saved")).join(""))}
-      ${tableHtml("Recent (last 20)", recent.map(ch => rowHtml(ch, "recent")).join(""))}
-    `,
-    buttons: [{ text: "Close", className: "btn btnPrimary", action: () => closeDialog() }]
-  });
-
-  // Wire buttons
-  dialogHost.querySelectorAll("[data-hview]").forEach(btn => {
-    btn.addEventListener("click", async () => {
-      const id = btn.getAttribute("data-hview");
-      const ch = loadChallengeHistory().find(x => x.id === id);
-      if (!ch) return;
-
-      if (!ch.events || ch.events.length === 0) {
-        showToast("No rides in this challenge.");
-        return;
-      }
-
-      try {
-        const { blob, headerText } = await renderUpdateImagePng(ch);
-        showUpdateImageDialog({ blob, headerText });
-      } catch (e) {
-        console.error(e);
-        showToast("Sorry — could not create the image on this device.");
-      }
-    });
-  });
-
-  dialogHost.querySelectorAll("[data-hsave]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const id = btn.getAttribute("data-hsave");
-      setChallengeSaved(id, true);
-      // Re-open to refresh UI
-      closeDialog();
-      openSavedChallengesDialog();
-      showToast("Saved.");
-    });
-  });
-
-  dialogHost.querySelectorAll("[data-hdel]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const id = btn.getAttribute("data-hdel");
-
-      openConfirmDialog({
-        title: "Delete this challenge?",
-        body: "This will remove it from your device.",
-        confirmText: "Delete",
-        confirmClass: "btnDanger",
-        onConfirm: () => {
-          deleteChallengeFromHistory(id);
-          // refresh Saved Challenges dialog
-          closeDialog();
-          openSavedChallengesDialog();
-        }
-      });
-    });
-  });
-}
-
-/* ==========================
-   Park page + ride logging
-   ========================== */
-function getParkDisplayName(parkId) {
-  return PARKS.find(p => p.id === parkId)?.name || parkId;
-}
-
-function buildParkCompletionTweetMainText(parkName) {
-  return `✅ ${parkName} complete!`;
-}
-
-function isParkCompleteNow(parkId) {
-  if (!active) return false;
-
-  const parkRides = rides.filter(r => r.park === parkId);
-  const completedMap = buildCompletedMap(active.events || []);
-  const excludedSet = getExcludedSetForActive();
-
-  return parkRides.every(r => completedMap.has(r.id) || excludedSet.has(r.id));
-}
-
-
-function renderParkPage({ readOnly = false } = {}) {
-  if (!active) return;
-
-  const parkRides = rides
-    .filter(r => r.park === currentPark)
-    .sort((a, b) => (a.sortKey || "").localeCompare(b.sortKey || "", "en", { sensitivity: "base" }));
-
-  const completedMap = buildCompletedMap(active.events);
-
-  // Header pill text
-  counterPill.textContent = `Rides: ${active.events.length}`;
-
-  const excludedSet = getExcludedSetForActive();
-
-  // Park complete if every ride is either completed OR excluded
-  const parkComplete = parkRides.every(r => completedMap.has(r.id) || excludedSet.has(r.id));
-  const parkName = getParkDisplayName(currentPark);
-
-  const parkCompleteButtonHtml = parkComplete
-    ? `
-        <div style="display:flex; justify-content:center; margin-top:16px;">
-          <button
-            id="parkCompleteTweetBtn"
-            class="btn btnPrimary"
-            type="button"
-          >${escapeHtml(`${parkName} complete! Click to tweet`)}</button>   
-        </div>
-      `
-    : "";
-
-  // IMPORTANT: no UI change until complete (no placeholder spacing)
-  appEl.innerHTML = parkComplete
-    ? `
-      <div class="stack">
-        ${parkCompleteButtonHtml}
-        <div class="rides" role="list">
-          ${parkRides.map(r => renderRideRow(r, completedMap, readOnly)).join("")}
-        </div>
-      </div>
-    `
-    : `
-      <div class="stack">
-        <div class="rides" role="list">
-          ${parkRides.map(r => renderRideRow(r, completedMap, readOnly)).join("")}
-        </div>
-      </div>
-    `;
-
-  // Wire park completion tweet button (visible only when complete)
-  if (!readOnly && parkComplete) {
-    document.getElementById("parkCompleteTweetBtn")?.addEventListener("click", () => {
-      const mainText = buildParkCompletionTweetMainText(parkName);
-      openTweetDraft(mainText); // reuses the exact same suffix/formatting logic
-    });
-  }
-
-  // Wire ride row buttons / undo-edit
-  for (const r of parkRides) {
-    const info = completedMap.get(r.id);
-    const isCompleted = !!info;
-    const isExcluded = excludedSet.has(r.id);
-
-    if (!readOnly) {
-      // Excluded rides have no buttons and no undo/edit
-      if (!isExcluded && !isCompleted) {
-        document.querySelector(`[data-line="${r.id}:standby"]`)?.addEventListener("click", () => logRide(r, "standby"));
-        if (r.ll) document.querySelector(`[data-line="${r.id}:ll"]`)?.addEventListener("click", () => logRide(r, "ll"));
-        if (r.sr) document.querySelector(`[data-line="${r.id}:sr"]`)?.addEventListener("click", () => logRide(r, "sr"));
-      }
-
-      if (!isExcluded) {
-        document.querySelector(`[data-undo="${r.id}"]`)?.addEventListener("click", () => {
-          const eventInfo = completedMap.get(r.id);
-          if (!eventInfo) return;
-          openUndoEditDialog(r, eventInfo);
-        });
-      }
-    }
-  }
-}
-
-
-function renderRideRow(r, completedMap, readOnly) {
-  const info = completedMap.get(r.id);
-  const completed = !!info;
-
-  // Excluded rides apply only if NOT completed
-  const excludedSet = getExcludedSetForActive();
-  const excluded = !completed && excludedSet.has(r.id);
-
-  const hasLL = !!r.ll;
-  const hasSR = !!r.sr;
-
-  // Ride name is always just text now (actions happen via buttons)
-  const nameHtml = `<p class="rideName">${escapeHtml(r.name)}</p>`;
-
-  // Row 2 for excluded rides
-  const excludedMetaHtml = excluded
-    ? `<div class="excludedMeta">
-         <div class="excludedNote">Excluded from today's challenge</div>
-       </div>`
-    : "";
-
-  // Row 2 for completed rides: "- completed using ..."
-  const completedText = completed ? renderCompletedText(info.event.mode, info.event.timeISO) : "";
-  const completedMetaHtml = completed
-    ? `<div class="completedMeta">
-         <div class="completedNote">${escapeHtml(completedText)}</div>
-         ${(!readOnly ? `<button class="smallBtn" type="button" data-undo="${r.id}">Undo/Edit</button>` : "")}
-       </div>`
-    : "";
-
-  // Row 2 for uncompleted rides: ALWAYS show Standby; add LL/SR if applicable
-  let buttonsHtml = "";
-  if (!completed && !excluded) {
-    const colsClass = hasSR ? "three" : (hasLL ? "two" : "one");
-
-    const standbyBtn = renderLineButton(r.id, "standby", "Standby Line", false, readOnly);
-    const llBtn = hasLL ? renderLineButton(r.id, "ll", "Lightning Lane", false, readOnly) : "";
-    const srBtn = hasSR ? renderLineButton(r.id, "sr", "Single Rider", false, readOnly) : "";
-
-    buttonsHtml = `
-      <div class="lineButtons ${colsClass}">
-        ${standbyBtn}
-        ${llBtn}
-        ${srBtn}
-      </div>
-    `;
-  }
-
-  return `
-  <div class="rideRow ${completed ? "completed" : ""} ${excluded ? "excluded" : ""}" role="listitem">
-    <div class="rideMain">
-      ${nameHtml}
-      ${excludedMetaHtml}
-      ${completedMetaHtml}
-      ${buttonsHtml}
-    </div>
-  </div>
-`;
-}
-
-function renderLineButton(rideId, mode, label, selected, readOnly) {
-  const cls = ["lineBtn"];
-  if (selected) cls.push("selected");
-  if (readOnly) cls.push("disabled");
-  return `
-    <button
-      type="button"
-      class="${cls.join(" ")}"
-      ${readOnly ? "disabled" : ""}
-      data-line="${rideId}:${mode}">
-      ${escapeHtml(label)}
-    </button>
-  `;
-}
-
-function renderCompletedText(mode, timeISO) {
-  const label =
-    mode === "ll" ? "Lightning Lane" :
-    mode === "sr" ? "Single Rider" :
-    "Standby Line";
-
-  const t = timeISO ? ` at ${formatTime12(new Date(timeISO))}` : "";
-  return `- completed using ${label}${t}`;
-}
-
-function logRide(ride, mode) {
-  if (!active) return;
-
-  // Safety: don't allow logging rides excluded from today's challenge
-  const excludedSet = getExcludedSetForActive();
-  if (excludedSet.has(ride.id)) {
-    showToast("That ride is excluded from today's challenge.");
-    return;
-  }
-
-  const now = new Date();
-  const timeLabel = formatTime(now);
-  const rideNumber = active.events.length + 1;
-
-  const event = {
-    id: crypto.randomUUID(),
-    rideId: ride.id,
-    park: ride.park,
-    mode, // standby | ll | sr
-    timeISO: now.toISOString(),
-    rideName: ride.name
-  };
-
-  active.events.push(event);
-  saveActiveChallenge(active);
-
-  const llNumber =
-    mode === "ll"
-      ? (active?.events?.filter(e => e.mode === "ll").length || 0)
-      : null;
-
-  const tweetText = buildRideTweet({
-    rideNumber,
-    rideName: ride.name,
-    mode,
-    timeLabel,
-    llNumber
-  });
-
-  openTweetDraft(tweetText);
-  renderParkPage({ readOnly: false });
-}
-
-function buildRideTweet({ rideNumber, rideName, mode, timeLabel, llNumber }) {
-  const base = `Ride ${rideNumber}. ${rideName}`;
-
-  // Only mention the line type if it's NOT standby (standby is the default) and  add count of LL
-  const mid =
-    mode === "ll" ? ` using Lightning Lane${llNumber ? ` #${llNumber}` : ""}` :
-    mode === "sr" ? " using Single Rider" :
-    "";
-
-  return `${base}${mid} at ${timeLabel}`;
-}
-
-function getTagsAndLinkFromActive() {
-  // Prefer top-level fields (app.js reads these), but fall back to storage.js settings.
-  const tags = (active?.tagsText ?? active?.settings?.tagsText ?? "").trim();
-  const link = (active?.fundraisingLink ?? active?.settings?.fundraisingLink ?? "").trim();
-  return { tags, link };
-}
-
-function openTweetDraft(mainText) {
-  const { tags, link } = getTagsAndLinkFromActive();
-
-  let fullText = (mainText ?? "").trim();
-  if (tags) fullText += "\n\n" + tags;
-  if (link) fullText += "\n\n" + link;
-
-  const url = new URL("https://twitter.com/intent/tweet");
-  url.searchParams.set("text", fullText);
-  window.open(url.toString(), "_blank", "noopener,noreferrer");
-}
-
-function buildCompletedMap(events) {
-  const m = new Map();
-  events.forEach((e, idx) => m.set(e.rideId, { index: idx, event: e }));
-  return m;
-}
-
-/* ==========================
-   Tweet update (image) logic
-   ========================== */
-
-function mediumRideNameFor(rideId, fallbackName) {
-  const r = ridesById.get(rideId);
-  return (r && (r.mediumName || r.name)) ? (r.mediumName || r.name) : (fallbackName || "");
-}
-
-function lineAbbrev(mode) {
-  if (mode === "ll") return "LL";
-  if (mode === "sr") return "SR";
-  return "";
-}
-
-function formatTime12(d) {
-  let h = d.getHours();
-  const m = String(d.getMinutes()).padStart(2, "0");
-  const ampm = h >= 12 ? "PM" : "AM";
-  h = h % 12;
-  if (h === 0) h = 12;
-  return `${h}:${m} ${ampm}`;
-}
-
-function truncateToWidth(ctx, text, maxWidth) {
-  if (ctx.measureText(text).width <= maxWidth) return text;
-  let t = text;
-  while (t.length > 0 && ctx.measureText(t + "…").width > maxWidth) {
-    t = t.slice(0, -1);
-  }
-  return t.length ? t + "…" : "";
-}
-
-async function renderUpdateImagePng(ch) {
-  const events = ch?.events || [];
-
-  // Determine "as of" time = time of most recent ride (fallback to now)
-  const lastEvent = [...events]
-    .filter(e => e.timeISO)
-    .sort((a, b) => new Date(b.timeISO) - new Date(a.timeISO))[0];
-
-  const asOfDate = lastEvent?.timeISO
-    ? new Date(lastEvent.timeISO)
-    : new Date();
-
-  // Use the challenge day for the date label (unchanged)
-  const dateLabel = formatDayKeyLong(ch?.dayKey);
-
-  // Header lines
-  const headerLine1 = dateLabel
-    ? `${dateLabel} challenge run`
-    : `Challenge run`;
-
-  const headerLine2 = `${events.length} rides as of ${formatTime12(asOfDate)}`;
-
-  // Keep returning headerText for share text (use both lines)
-  const headerText = `${headerLine1} — ${headerLine2}`;
-
-  const pad = 22;
-  const rowH = 34;
-  const headH = 84;
-  const headerRowH = 42;
-
-  const colN = 52;
-  const colTime = 110;
-  const colLine = 70;
-
-  const W = 720;
-  const tableW = W - pad * 2;
-  const colRide = tableW - colN - colTime - colLine;
-
-  const H = pad * 2 + headH + headerRowH + events.length * rowH + 18;
-
-  const dpr = Math.max(2, Math.floor(window.devicePixelRatio || 1));
-  const canvas = document.createElement("canvas");
-  canvas.width = W * dpr;
-  canvas.height = H * dpr;
-
-  const ctx = canvas.getContext("2d");
-  ctx.scale(dpr, dpr);
-
-  // background
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(0, 0, W, H);
-
-  // header
-  ctx.fillStyle = "#111827";
-
-  // Line 1 (date)
-  ctx.font = "700 28px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  ctx.fillText(headerLine1, pad, pad + 26);
-
-  // Line 2 (rides as of time)
-  ctx.font = "700 28px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  ctx.fillText(headerLine2, pad, pad + 60);
-
-  // divider
-  let y = pad + headH;
-  ctx.strokeStyle = "#111827";
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(pad, y);
-  ctx.lineTo(W - pad, y);
-  ctx.stroke();
-
-  // column headers
-  y += 28;
-  ctx.fillStyle = "#111827";
-  ctx.font = "700 18px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  ctx.fillText("#", pad + 8, y);
-  ctx.fillText("Time", pad + colN + 8, y);
-  ctx.fillText("Ride", pad + colN + colTime + 8, y);
-  ctx.fillText("LL/SR", pad + colN + colTime + colRide + 6, y);
-
-  // rows start
-  y += 16;
-  ctx.font = "500 18px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  ctx.fillStyle = "#111827";
-  ctx.strokeStyle = "#e5e7eb";
-  ctx.lineWidth = 1;
-
-  for (let i = 0; i < events.length; i++) {
-    const e = events[i];
-    const rowTop = y + i * rowH;
-
-    // Park-tinted background (muted)
-    const parkId = e.park || ridesById.get(e.rideId)?.park || "mk";
-    const tint = (PARK_THEME[parkId]?.park2) || "rgba(0,0,0,.04)";
-    ctx.fillStyle = tint;
-    ctx.fillRect(pad, rowTop, tableW, rowH);
-
-    // row divider
-    ctx.strokeStyle = "#e5e7eb";
-    ctx.beginPath();
-    ctx.moveTo(pad, rowTop);
-    ctx.lineTo(W - pad, rowTop);
-    ctx.stroke();
-
-    // text
-    ctx.fillStyle = "#111827";
-    const ty = rowTop + 23;
-
-    const timeStr = e.timeISO ? formatTime12(new Date(e.timeISO)) : "";
-    const rideStr = mediumRideNameFor(e.rideId, e.rideName);
-    const rideText = truncateToWidth(ctx, rideStr, colRide - 12);
-    const lineStr = lineAbbrev(e.mode);
-
-    ctx.fillText(String(i + 1), pad + 8, ty);
-    ctx.fillText(timeStr, pad + colN + 8, ty);
-    ctx.fillText(rideText, pad + colN + colTime + 8, ty);
-    ctx.fillText(lineStr, pad + colN + colTime + colRide + 18, ty);
-  }
-
-  // bottom border
-  const bottomY = y + events.length * rowH;
-  ctx.strokeStyle = "#e5e7eb";
-  ctx.beginPath();
-  ctx.moveTo(pad, bottomY);
-  ctx.lineTo(W - pad, bottomY);
-  ctx.stroke();
-
-  const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png", 1.0));
-  if (!blob) throw new Error("toBlob failed");
-  return { blob, headerText };
-}
-
-function formatDayKeyLong(dayKey) {
-  if (!dayKey) return "";
-  // Noon avoids timezone edge cases
-  const d = new Date(`${dayKey}T12:00:00`);
-  return d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
-}
-
-function showUpdateImageDialog({ blob, headerText }) {
-  const url = URL.createObjectURL(blob);
-
-  const canShareFile = (() => {
-    try {
-      const f = new File([blob], "ride-update.png", { type: "image/png" });
-      return !!(navigator.canShare && navigator.share && navigator.canShare({ files: [f] }));
-    } catch {
-      return false;
-    }
-  })();
-
-  dialogHost.innerHTML = `
-    <div class="dialogBackdrop" role="presentation">
-      <div class="dialog" role="dialog" aria-modal="true" style="max-width:520px;">
-        <div style="margin:12px 0;">
-          <img src="${url}" alt="Update image preview"
-               style="width:100%;border:1px solid #e5e7eb;border-radius:12px;" />
-        </div>
-
-        <div class="btnRow" style="margin-top:10px;">
-          ${canShareFile ? `<button id="shareUpdateImgBtn" type="button" class="btn btnPrimary">Share image</button>` : ""}
-          <button id="downloadUpdateImgBtn" type="button" class="btn ${canShareFile ? "" : "btnPrimary"}">Download image</button>
-          <button id="closeUpdateImgBtn" type="button" class="btn">Close</button>
-        </div>
-      </div>
-    </div>
-  `;
-
-  const close = () => {
-    try { URL.revokeObjectURL(url); } catch {}
-    closeDialog();
-  };
-
-  dialogHost.querySelector(".dialogBackdrop")?.addEventListener("click", (e) => {
-    if (e.target.classList.contains("dialogBackdrop")) close();
-  });
-
-  dialogHost.querySelector("#closeUpdateImgBtn")?.addEventListener("click", close);
-
-  dialogHost.querySelector("#downloadUpdateImgBtn")?.addEventListener("click", () => {
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "ride-update.png";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-  });
-
-  const shareBtn = dialogHost.querySelector("#shareUpdateImgBtn");
-  shareBtn?.addEventListener("click", async () => {
-    try {
-      const file = new File([blob], "ride-update.png", { type: "image/png" });
-      await navigator.share({
-        files: [file],
-        text: headerText
-      });
-    } catch {
-      // user cancelled or share failed
-    }
-  });
-}
-
-/* ==========================
-   Undo/Edit logic (unchanged)
-   ========================== */
-
-function openLineEditDialog(ride, info) {
-  if (!active || !info) return;
-
-  const idx = info.index;
-  const currentMode = info.event.mode;
-
-  openDialog({
-    title: `Edit line used for ${ride.name}?`,
-    body: `This will affect future updates only.\nPreviously sent tweets won’t be changed.`,
-    content: `
-      <div class="radioList">
-        ${radioItem("standby", "Standby Line", currentMode)}
-        ${radioItem("ll", "Lightning Lane", currentMode, !!ride.ll)}
-        ${radioItem("sr", "Single Rider", currentMode, !!ride.sr)}
-      </div>
-    `,
-    buttons: [
-      { text: "Save changes", className: "btn btnPrimary", action: () => saveEdit(false) },
-      { text: "Save & generate correction tweet", className: "btn", action: () => saveEdit(true) },
-      { text: "Cancel", className: "btn", action: () => closeDialog() }
-    ]
-  });
-
-  function radioItem(value, label, selected, enabled = true) {
-    return `
-      <label class="radioItem" style="${enabled ? "" : "opacity:.45"}">
-        <input type="radio" name="mode" value="${value}" ${selected === value ? "checked" : ""} ${enabled ? "" : "disabled"} />
-        <span>${escapeHtml(label)}</span>
-      </label>
-    `;
-  }
-
-  function saveEdit(withCorrectionTweet) {
-    const picked = document.querySelector('input[name="mode"]:checked')?.value ?? currentMode;
-
-    active.events[idx] = { ...active.events[idx], mode: picked };
-    saveActiveChallenge(active);
-
-    closeDialog();
-    renderParkPage({ readOnly: false });
-
-    showToast("Changes saved for future updates.");
-
-    if (withCorrectionTweet) {
-      const rideNumber = idx + 1;
-      const line =
-        picked === "ll" ? "Lightning Lane" :
-        picked === "sr" ? "Single Rider" :
-        "Standby Line";
-      const txt = `Correction: Ride ${rideNumber}. ${ride.name} was via ${line}.`;
-      openTweetDraft(txt);
-    }
-  }
-}
-
-function openUndoEditDialog(ride, eventInfo) {
-  const hasAlt = !!ride.ll || !!ride.sr;
-
-  const isMostRecent = eventInfo.index === active.events.length - 1;
-
-  const buttons = [
-    {
-      text: "Undo completion",
-      className: "btn btnPrimary",
-      action: () => {
-        // If most recent, undo immediately (no renumber warning)
-        if (isMostRecent) {
-          closeDialog(); // close Undo/Edit popup
-          active.events = active.events.filter(e => e.id !== eventInfo.event.id);
-          saveActiveChallenge(active);
-          renderParkPage({ readOnly: false });
-          return;
-        }
-
-        // Not most recent: show a 2nd confirm popup *after* clicking Undo completion
-        openConfirmDialog({
-          title: `Undo today’s completion for ${ride.name}?`,
-          body: "Note: This will renumber some previous rides.\nPreviously sent tweets won’t be changed.",
-          confirmText: "Undo completion",
-          onConfirm: () => {
-            // Confirm dialog closes itself; also close the Undo/Edit popup behind it
-            closeDialog();
-            active.events = active.events.filter(e => e.id !== eventInfo.event.id);
-            saveActiveChallenge(active);
-            renderParkPage({ readOnly: false });
-          }
-        });
-      }
-    }
-  ];
-
-  if (hasAlt) {
-    buttons.push({
-      text: "Edit line used",
-      className: "btn",
-      action: () => {
-        closeDialog();          // close Undo/Edit popup
-        openLineEditDialog(ride, eventInfo); // opens the edit dialog
-      }
-    });
-  }
-
-  buttons.push({
-    text: "Cancel",
-    className: "btn",
-    action: () => closeDialog()
-  });
-
-  // Popup #1: always the same, no warning text
-  openDialog({
-    title: `Undo/Edit: ${ride.name}`,
-    body: "",
-    content: "",
-    buttons
-  });
-}
-
-/* ==========================
-   Dialog + helpers
-   ========================== */
-
-function openConfirmDialog({ title, body, confirmText, confirmClass, onConfirm }) {
-  openDialog({
-    title,
-    body: body || "",
-    content: "",
-    buttons: [
-      {
-        text: confirmText || "Confirm",
-        className: `btn btnPrimary ${confirmClass || ""}`.trim(),
-        action: () => { closeDialog(); onConfirm(); }
-      },
-      { text: "Cancel", className: "btn", action: () => closeDialog() }
-    ]
-  });
-}
-
-function openDialog({ title, body, content, buttons }) {
-  dialogHost.innerHTML = `
-    <div class="dialogBackdrop" role="presentation">
-      <div class="dialog" role="dialog" aria-modal="true">
-        <h3>${escapeHtml(title)}</h3>
-        ${body ? `<p>${escapeHtml(body).replaceAll("\n", "<br/>")}</p>` : ""}
-        ${content || ""}
-        <div class="btnRow" style="margin-top:10px;">
-          ${buttons.map((b, i) => `<button data-dbtn="${i}" type="button" class="${b.className || "btn"}">${escapeHtml(b.text)}</button>`).join("")}
-        </div>
-      </div>
-    </div>
-  `;
-
-  dialogHost.querySelector(".dialogBackdrop")?.addEventListener("click", (e) => {
-    if (e.target.classList.contains("dialogBackdrop")) closeDialog();
-  });
-
-  buttons.forEach((b, i) => {
-    dialogHost.querySelector(`[data-dbtn="${i}"]`)?.addEventListener("click", b.action);
-  });
-}
-
-function closeDialog() {
-  dialogHost.innerHTML = "";
-}
-
-function showToast(msg) {
-  const el = document.createElement("div");
-  el.className = "toast";
-  el.textContent = msg;
-  document.body.appendChild(el);
-  setTimeout(() => el.remove(), 2200);
-}
-
-function formatTime(d) {
-  let h = d.getHours();
-  const m = String(d.getMinutes()).padStart(2, "0");
-  const ampm = h >= 12 ? "PM" : "AM";
-  h = h % 12;
-  if (h === 0) h = 12;
-  return `${h}:${m} ${ampm}`;
-}
-
-function escapeHtml(s) {
-  return String(s)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
-
-
-
-
-
+            .
