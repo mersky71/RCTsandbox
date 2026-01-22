@@ -6,33 +6,6 @@ const KEY_HISTORY = "erw_challengeHistory_v1";
 export const CUTOFF_HOUR = 3; // 3:00 AM local time
 export const MAX_RECENT_HISTORY = 20;
 
-/* ==========================
-   Challenge shape helpers
-   ========================== */
-
-function ensureChallengeShape(ch) {
-  if (!ch || typeof ch !== "object") return ch;
-
-  // Excluded rides for today's challenge scope
-  if (!Array.isArray(ch.excludedRideIds)) ch.excludedRideIds = [];
-
-  // Keep older objects compatible (some code reads top-level fields)
-  if (ch.settings && typeof ch.settings === "object") {
-    if (typeof ch.tagsText !== "string") ch.tagsText = ch.settings.tagsText ?? "";
-    if (typeof ch.fundraisingLink !== "string") ch.fundraisingLink = ch.settings.fundraisingLink ?? "";
-  }
-
-  // Ensure events array exists
-  if (!Array.isArray(ch.events)) ch.events = [];
-
-  return ch;
-}
-
-function ensureHistoryShape(arr) {
-  if (!Array.isArray(arr)) return [];
-  return arr.map(ensureChallengeShape);
-}
-
 export function dayKeyFor(date, cutoffHour = CUTOFF_HOUR) {
   // Challenge "day" is based on local time minus cutoff hours.
   const shifted = new Date(date.getTime() - cutoffHour * 60 * 60 * 1000);
@@ -45,8 +18,7 @@ export function dayKeyFor(date, cutoffHour = CUTOFF_HOUR) {
 export function loadActiveChallenge() {
   try {
     const raw = localStorage.getItem(KEY_ACTIVE);
-    const parsed = raw ? JSON.parse(raw) : null;
-    return ensureChallengeShape(parsed);
+    return raw ? JSON.parse(raw) : null;
   } catch {
     return null;
   }
@@ -63,8 +35,7 @@ export function clearActiveChallenge() {
 export function loadLastChallenge() {
   try {
     const raw = localStorage.getItem(KEY_LAST);
-    const parsed = raw ? JSON.parse(raw) : null;
-    return ensureChallengeShape(parsed);
+    return raw ? JSON.parse(raw) : null;
   } catch {
     return null;
   }
@@ -86,7 +57,7 @@ export function startNewChallenge({ tagsText, fundraisingLink }) {
   const now = new Date();
   const dayKey = dayKeyFor(now);
 
-  const challenge = ensureChallengeShape({
+  const challenge = {
     id: crypto.randomUUID(),
     dayKey,
     startedAt: now.toISOString(),
@@ -94,12 +65,10 @@ export function startNewChallenge({ tagsText, fundraisingLink }) {
       tagsText: tagsText ?? "",
       fundraisingLink: fundraisingLink ?? ""
     },
-    // NEW: excluded rides for today's scope
-    excludedRideIds: [],
     // Events are authoritative; numbering is derived from order.
     // event: { id, rideId, park, mode, timeISO, rideName }
     events: []
-  });
+  };
 
   saveActiveChallenge(challenge);
   return challenge;
@@ -120,11 +89,61 @@ function safeClone(obj) {
   return JSON.parse(JSON.stringify(obj));
 }
 
+
+
+export function getChallengeLastActivityISO(ch) {
+  if (!ch) return null;
+  if (ch.endedAt) return ch.endedAt;
+  const ev = Array.isArray(ch.events) ? ch.events : [];
+  if (ev.length > 0) {
+    const last = ev[ev.length - 1];
+    if (last && last.timeISO) return last.timeISO;
+  }
+  return ch.startedAt || null;
+}
+
+export function hoursSinceISO(isoString) {
+  if (!isoString) return Infinity;
+  const t = Date.parse(isoString);
+  if (!Number.isFinite(t)) return Infinity;
+  const diffMs = Date.now() - t;
+  return diffMs / (1000 * 60 * 60);
+}
+
+export function getMostRecentHistoryChallenge() {
+  const hist = loadChallengeHistory();
+  if (!hist.length) return null;
+
+  // History is stored newest-first, but we compute explicitly in case older data isn't sorted.
+  let best = null;
+  let bestT = -Infinity;
+  for (const h of hist) {
+    const iso = getChallengeLastActivityISO(h);
+    const t = Date.parse(iso || "") || 0;
+    if (t > bestT) {
+      bestT = t;
+      best = h;
+    }
+  }
+  return best;
+}
+
+export function popMostRecentHistoryChallenge() {
+  const hist = loadChallengeHistory();
+  if (!hist.length) return null;
+
+  const best = getMostRecentHistoryChallenge();
+  if (!best || !best.id) return null;
+
+  const next = hist.filter(h => h && h.id !== best.id);
+  saveChallengeHistory(normalizeHistory(next));
+  return best;
+}
 export function loadChallengeHistory() {
   try {
     const raw = localStorage.getItem(KEY_HISTORY);
     const arr = raw ? JSON.parse(raw) : [];
-    return ensureHistoryShape(Array.isArray(arr) ? arr : []);
+    return Array.isArray(arr) ? arr : [];
   } catch {
     return [];
   }
@@ -142,7 +161,7 @@ function normalizeHistory(history) {
     if (!item || !item.id) continue;
     if (seen.has(item.id)) continue;
     seen.add(item.id);
-    out.push(ensureChallengeShape(item));
+    out.push(item);
   }
 
   const saved = out.filter(x => x.saved === true);
@@ -154,8 +173,8 @@ function normalizeHistory(history) {
   return [...saved, ...trimmedRecent]
     // And then sort overall newest-first for storage convenience
     .sort((a, b) => {
-      const ta = Date.parse(a.endedAt || a.startedAt || "") || 0;
-      const tb = Date.parse(b.endedAt || b.startedAt || "") || 0;
+      const ta = Date.parse(getChallengeLastActivityISO(a) || "") || 0;
+      const tb = Date.parse(getChallengeLastActivityISO(b) || "") || 0;
       return tb - ta;
     });
 }
@@ -164,7 +183,7 @@ export function archiveChallengeToHistory(ch, { saved = false } = {}) {
   if (!ch || !ch.id) return;
 
   const now = new Date().toISOString();
-  const entry = ensureChallengeShape(safeClone(ch));
+  const entry = safeClone(ch);
 
   entry.endedAt = entry.endedAt || now;
   entry.saved = !!saved;
@@ -189,7 +208,7 @@ export function setChallengeSaved(id, saved = true) {
 
   const next = hist.map(h => {
     if (!h || h.id !== id) return h;
-    const copy = ensureChallengeShape(safeClone(h));
+    const copy = safeClone(h);
     copy.saved = !!saved;
     if (saved && !copy.savedAt) copy.savedAt = now;
     if (!saved) delete copy.savedAt;
