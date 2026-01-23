@@ -37,6 +37,45 @@ const PARK_THEME = {
   ak: { park: "#166534", park2: "rgba(22,101,52,.26)", parkText: "#0b0f14" }  // Forest green
 };
 
+
+// --- Share Update image: render times in resort timezone (DST-aware) ---
+// WDW = Eastern. If you later make Disneyland: set to "America/Los_Angeles" and "PT".
+const RESORT_TIMEZONE = "America/New_York";
+const RESORT_TIME_ABBREV = "ET";
+
+function formatTimeResort(d) {
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: RESORT_TIMEZONE,
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true
+  }).format(d);
+}
+
+function formatDateResortLong(d) {
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: RESORT_TIMEZONE,
+    month: "short",
+    day: "numeric",
+    year: "numeric"
+  }).format(d);
+}
+
+function dateKeyResort(d) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: RESORT_TIMEZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).formatToParts(d);
+
+  const get = (type) => parts.find(p => p.type === type)?.value;
+  return `${get("year")}-${get("month")}-${get("day")}`; // YYYY-MM-DD
+}
+
+
+
+
 const appEl = document.getElementById("app");
 const parkSelect = document.getElementById("parkSelect");
 const counterPill = document.getElementById("counterPill");
@@ -1193,115 +1232,130 @@ function truncateToWidth(ctx, text, maxWidth) {
 }
 
 async function renderUpdateImagePng(ch) {
-  const events = ch?.events || [];
+  const events = (ch?.events || []).slice();
+  const lastEvent = events.length ? events[events.length - 1] : null;
 
-  // Determine "as of" time = time of most recent ride (fallback to now)
-  const lastEvent = [...events]
-    .filter(e => e.timeISO)
-    .sort((a, b) => new Date(b.timeISO) - new Date(a.timeISO))[0];
+  const asOfDate = lastEvent?.timeISO ? new Date(lastEvent.timeISO) : new Date();
+  const headerLine1 = formatDateResortLong(asOfDate);
+  const headerLine2 = `${events.length} rides as of ${formatTimeResort(asOfDate)}`;
+  const headerText = `${headerLine1}\n${headerLine2}`;
 
-  const asOfDate = lastEvent?.timeISO
-    ? new Date(lastEvent.timeISO)
-    : new Date();
+  // Count date separator rows (inserted before first ride of a new day in resort TZ)
+  let extraDateRows = 0;
+  let prevKey = null;
+  for (let i = 0; i < events.length; i++) {
+    const iso = events[i]?.timeISO;
+    if (!iso) continue;
+    const k = dateKeyResort(new Date(iso));
+    if (prevKey && k && k !== prevKey) extraDateRows++;
+    prevKey = k;
+  }
 
-  // Use the challenge day for the date label (unchanged)
-  const dateLabel = formatDayKeyLong(ch?.dayKey);
-
-  // Header lines
-  const headerLine1 = dateLabel
-    ? `${dateLabel} challenge run`
-    : `Challenge run`;
-
-  const headerLine2 = `${events.length} rides as of ${formatTime12(asOfDate)}`;
-
-  // Keep returning headerText for share text (use both lines)
-  const headerText = `${headerLine1} — ${headerLine2}`;
-
-  const pad = 22;
+  // Layout constants (keep your existing values if they differ)
+  const W = 880;
+  const pad = 24;
+  const headH = 72;
+  const headerRowH = 34;
   const rowH = 34;
-  const headH = 84;
-  const headerRowH = 42;
 
-  const colN = 52;
-  const colTime = 110;
-  const colLine = 70;
+  const colN = 54;
+  const colTime = 140;
+  const colRide = 520; // remaining width is for line column
 
-  const W = 720;
-  const tableW = W - pad * 2;
-  const colRide = tableW - colN - colTime - colLine;
+  const totalRows = events.length + extraDateRows;
+  const H = pad * 2 + headH + headerRowH + totalRows * rowH + 18;
 
-  const H = pad * 2 + headH + headerRowH + events.length * rowH + 18;
-
-  const dpr = Math.max(2, Math.floor(window.devicePixelRatio || 1));
   const canvas = document.createElement("canvas");
-  canvas.width = W * dpr;
-  canvas.height = H * dpr;
-
+  canvas.width = W;
+  canvas.height = H;
   const ctx = canvas.getContext("2d");
-  ctx.scale(dpr, dpr);
 
-  // background
+  // Background
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, W, H);
 
-  // header
+  // Header
   ctx.fillStyle = "#111827";
+  ctx.font = "800 28px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  ctx.fillText(headerLine1, pad, pad + 32);
 
-  // Line 1 (date)
-  ctx.font = "700 28px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  ctx.fillText(headerLine1, pad, pad + 26);
+  ctx.font = "600 18px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  ctx.fillText(headerLine2, pad, pad + 58);
 
-  // Line 2 (rides as of time)
-  ctx.font = "700 28px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  ctx.fillText(headerLine2, pad, pad + 60);
-
-  // divider
+  // Table header row
   let y = pad + headH;
-  ctx.strokeStyle = "#111827";
-  ctx.lineWidth = 2;
+  const tableW = W - pad * 2;
+
+  ctx.fillStyle = "#111827";
+  ctx.font = "700 16px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  ctx.fillText("#", pad + 8, y + 24);
+  ctx.fillText(`Time (${RESORT_TIME_ABBREV})`, pad + colN + 8, y + 24);
+  ctx.fillText("Ride", pad + colN + colTime + 8, y + 24);
+  ctx.fillText("Line", pad + colN + colTime + colRide + 18, y + 24);
+
+  // Divider under header row
+  ctx.strokeStyle = "#e5e7eb";
   ctx.beginPath();
-  ctx.moveTo(pad, y);
-  ctx.lineTo(W - pad, y);
+  ctx.moveTo(pad, y + headerRowH);
+  ctx.lineTo(W - pad, y + headerRowH);
   ctx.stroke();
 
-  // column headers
-  y += 28;
-  ctx.fillStyle = "#111827";
-  ctx.font = "700 18px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  ctx.fillText("#", pad + 8, y);
-  ctx.fillText("Time", pad + colN + 8, y);
-  ctx.fillText("Ride", pad + colN + colTime + 8, y);
-  ctx.fillText("LL/SR", pad + colN + colTime + colRide + 6, y);
+  y += headerRowH;
 
-  // rows start
-  y += 16;
-  ctx.font = "500 18px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  ctx.fillStyle = "#111827";
-  ctx.strokeStyle = "#e5e7eb";
-  ctx.lineWidth = 1;
+  // Rows
+  let drawRowIndex = 0;
+  let prevDateKey = null;
 
   for (let i = 0; i < events.length; i++) {
     const e = events[i];
-    const rowTop = y + i * rowH;
+    const eventDate = e.timeISO ? new Date(e.timeISO) : null;
+    const thisDateKey = eventDate ? dateKeyResort(eventDate) : null;
 
-    // Park-tinted background (muted)
+    // Insert date separator row before the first ride of the new day
+    if (prevDateKey && thisDateKey && thisDateKey !== prevDateKey) {
+      const rowTop = y + drawRowIndex * rowH;
+
+      ctx.fillStyle = "#f3f4f6";
+      ctx.fillRect(pad, rowTop, tableW, rowH);
+
+      ctx.strokeStyle = "#e5e7eb";
+      ctx.beginPath();
+      ctx.moveTo(pad, rowTop);
+      ctx.lineTo(W - pad, rowTop);
+      ctx.stroke();
+
+      ctx.fillStyle = "#111827";
+      ctx.font = "700 16px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+      ctx.textAlign = "center";
+      ctx.fillText(formatDateResortLong(eventDate), pad + tableW / 2, rowTop + 23);
+      ctx.textAlign = "start";
+
+      drawRowIndex++;
+    }
+
+    prevDateKey = thisDateKey || prevDateKey;
+
+    const rowTop = y + drawRowIndex * rowH;
+
+    // Park tint
     const parkId = e.park || ridesById.get(e.rideId)?.park || "mk";
     const tint = (PARK_THEME[parkId]?.park2) || "rgba(0,0,0,.04)";
     ctx.fillStyle = tint;
     ctx.fillRect(pad, rowTop, tableW, rowH);
 
-    // row divider
+    // Row divider
     ctx.strokeStyle = "#e5e7eb";
     ctx.beginPath();
     ctx.moveTo(pad, rowTop);
     ctx.lineTo(W - pad, rowTop);
     ctx.stroke();
 
-    // text
+    // Text
     ctx.fillStyle = "#111827";
-    const ty = rowTop + 23;
+    ctx.font = "500 18px system-ui, -apple-system, Segoe UI, Roboto, Arial";
 
-    const timeStr = e.timeISO ? formatTime12(new Date(e.timeISO)) : "";
+    const ty = rowTop + 23;
+    const timeStr = e.timeISO ? formatTimeResort(new Date(e.timeISO)) : "";
     const rideStr = mediumRideNameFor(e.rideId, e.rideName);
     const rideText = truncateToWidth(ctx, rideStr, colRide - 12);
     const lineStr = lineAbbrev(e.mode);
@@ -1310,18 +1364,19 @@ async function renderUpdateImagePng(ch) {
     ctx.fillText(timeStr, pad + colN + 8, ty);
     ctx.fillText(rideText, pad + colN + colTime + 8, ty);
     ctx.fillText(lineStr, pad + colN + colTime + colRide + 18, ty);
+
+    drawRowIndex++;
   }
 
-  // bottom border
-  const bottomY = y + events.length * rowH;
+  // Bottom border
+  const bottomY = y + (events.length + extraDateRows) * rowH;
   ctx.strokeStyle = "#e5e7eb";
   ctx.beginPath();
   ctx.moveTo(pad, bottomY);
   ctx.lineTo(W - pad, bottomY);
   ctx.stroke();
 
-  const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png", 1.0));
-  if (!blob) throw new Error("toBlob failed");
+  const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png", 0.92));
   return { blob, headerText };
 }
 
