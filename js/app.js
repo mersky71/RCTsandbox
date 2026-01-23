@@ -1242,13 +1242,21 @@ async function renderUpdateImagePng(ch) {
 
   const asOfDate = lastEvent?.timeISO ? new Date(lastEvent.timeISO) : new Date();
 
-  // Header line 1: challenge start date (use dayKey if present)
-  const headerLine1 = ch?.dayKey
+  // Header line 1: challenge start date (prefer dayKey)
+  const startDateLabel = ch?.dayKey
     ? formatDayKeyLong(ch.dayKey)
     : (ch?.startedAt ? formatDateResortLong(new Date(ch.startedAt)) : formatDateResortLong(asOfDate));
 
-  // Header line 2: include BOTH time + date of most recent ride
-  const headerLine2 = `${events.length} rides as of ${formatTimeResort(asOfDate)} · ${formatDateResortLong(asOfDate)}`;
+  const headerLine1 = startDateLabel;
+
+  // Header line 2: X rides as of TIME [+ DATE only if different day]
+  const asOfTimeStr = formatTimeResort(asOfDate);
+  const asOfDateStr = formatDateResortLong(asOfDate);
+
+  const headerLine2 =
+    asOfDateStr === startDateLabel
+      ? `${events.length} rides as of ${asOfTimeStr}`
+      : `${events.length} rides as of ${asOfTimeStr} · ${asOfDateStr}`;
 
   const headerText = `${headerLine1}\n${headerLine2}`;
 
