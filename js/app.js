@@ -1422,6 +1422,32 @@ function openLineEditDialog(ride, info) {
     ]
   });
 
+// Disable "correction tweet" unless the user actually changes the line type
+  const correctionBtn = dialogHost.querySelector('[data-dbtn="1"]'); // 2nd button
+  const modeInputs = dialogHost.querySelectorAll('input[name="mode"]');
+
+  function getPickedMode() {
+    return dialogHost.querySelector('input[name="mode"]:checked')?.value ?? currentMode;
+  }
+
+  function syncCorrectionBtn() {
+    const picked = getPickedMode();
+    const changed = picked !== currentMode;
+
+    if (!correctionBtn) return;
+
+    correctionBtn.disabled = !changed;
+
+    // Optional: toggle a class so it looks clearly greyed out
+    correctionBtn.classList.toggle("isDisabled", !changed);
+
+    // Optional: make it look "primary" only when it can be used
+    correctionBtn.classList.toggle("btnPrimary", changed);
+  }
+
+  modeInputs.forEach(inp => inp.addEventListener("change", syncCorrectionBtn));
+  syncCorrectionBtn();
+  
   function radioItem(value, label, selected, enabled = true) {
     return `
       <label class="radioItem" style="${enabled ? "" : "opacity:.45"}">
