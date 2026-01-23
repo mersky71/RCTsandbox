@@ -415,24 +415,29 @@ function applyParkTheme(parkId) {
   document.documentElement.style.setProperty("--parkText", t.parkText);
 }
 
-
-
 function getResumeCandidate() {
   const mostRecent = getMostRecentHistoryChallenge();
   if (!mostRecent) return null;
 
-  const lastISO = getChallengeLastActivityISO(mostRecent);
-  const hoursAgo = hoursSinceISO(lastISO);
-
-  if (!(hoursAgo <= RESUME_WINDOW_HOURS)) return null;
-
-  const ridesCount = Array.isArray(mostRecent.events) ? mostRecent.events.length : 0;
+  const events = Array.isArray(mostRecent.events) ? mostRecent.events : [];
+  const ridesCount = events.length;
   if (ridesCount <= 0) return null;
 
-  const lastDate = lastISO ? new Date(lastISO) : null;
-  const lastActivityLabel = lastDate ? `${formatDateShort(lastDate)} at ${formatTime(lastDate)}` : "Unknown";
+  // Use the most recent *ride* timestamp (not “activity” timestamps like savedAt/endedAt/etc.)
+  let lastRideISO = null;
+  for (let i = events.length - 1; i >= 0; i--) {
+    const iso = events[i]?.timeISO;
+    if (iso) { lastRideISO = iso; break; }
+  }
+  if (!lastRideISO) return null;
 
-  return { challenge: mostRecent, lastISO, hoursAgo, ridesCount, lastActivityLabel };
+  const hoursAgo = hoursSinceISO(lastRideISO);
+  if (!(hoursAgo <= RESUME_WINDOW_HOURS)) return null;
+
+  const lastRideDate = new Date(lastRideISO);
+  const lastRideLabel = `${formatDateShort(lastRideDate)} at ${formatTime(lastRideDate)}`;
+
+  return { challenge: mostRecent, lastRideISO, hoursAgo, ridesCount, lastRideLabel };
 }
 
 function handleResumeMostRecent() {
@@ -467,7 +472,7 @@ function renderStartPage() {
       <div class="card">
         <div class="h1">Resume most recent run</div>
         <p class="p" style="margin-top:6px;">
-          Last activity: ${escapeHtml(resumeCandidate.lastActivityLabel)} · ${resumeCandidate.ridesCount} ride${resumeCandidate.ridesCount === 1 ? "" : "s"}
+          Last ride: ${escapeHtml(resumeCandidate.lastRideLabel)} • ${resumeCandidate.ridesCount} ride${resumeCandidate.ridesCount === 1 ? "" : "s"}
         </p>
         <div class="btnRow" style="margin-top:12px;">
           <button id="resumeMostRecentBtn" class="btn btnPrimary" type="button">Resume</button>
@@ -544,7 +549,7 @@ Help me support @GKTWVillage by donating at the link below</textarea>
     openConfirmDialog({
       title: "Resume most recent run?",
       body:
-        `Last activity: ${candidate.lastActivityLabel}\n` +
+        `Last ride: ${candidate.lastRideLabel}\n` +
         `${candidate.ridesCount} ride${candidate.ridesCount === 1 ? "" : "s"} logged\n\n` +
         "Resuming will remove this run from Previous challenges and continue it.",
       confirmText: "Resume run",
@@ -1236,8 +1241,15 @@ async function renderUpdateImagePng(ch) {
   const lastEvent = events.length ? events[events.length - 1] : null;
 
   const asOfDate = lastEvent?.timeISO ? new Date(lastEvent.timeISO) : new Date();
-  const headerLine1 = formatDateResortLong(asOfDate);
-  const headerLine2 = `${events.length} rides as of ${formatTimeResort(asOfDate)}`;
+
+  // Header line 1: challenge start date (use dayKey if present)
+  const headerLine1 = ch?.dayKey
+    ? formatDayKeyLong(ch.dayKey)
+    : (ch?.startedAt ? formatDateResortLong(new Date(ch.startedAt)) : formatDateResortLong(asOfDate));
+
+  // Header line 2: include BOTH time + date of most recent ride
+  const headerLine2 = `${events.length} rides as of ${formatTimeResort(asOfDate)} · ${formatDateResortLong(asOfDate)}`;
+
   const headerText = `${headerLine1}\n${headerLine2}`;
 
   // Count date separator rows (inserted before first ride of a new day in resort TZ)
