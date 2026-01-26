@@ -1299,7 +1299,7 @@ async function renderUpdateImagePng(ch) {
   ctx.font = "800 28px system-ui, -apple-system, Segoe UI, Roboto, Arial";
   ctx.fillText(headerLine1, pad, pad + 32);
 
-  ctx.font = "600 18px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  ctx.font = "600 24px system-ui, -apple-system, Segoe UI, Roboto, Arial";
   ctx.fillText(headerLine2, pad, pad + 58);
 
   // Table header row
@@ -1307,7 +1307,7 @@ async function renderUpdateImagePng(ch) {
   const tableW = W - pad * 2;
 
   ctx.fillStyle = "#111827";
-  ctx.font = "700 16px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  ctx.font = "700 20px system-ui, -apple-system, Segoe UI, Roboto, Arial";
   ctx.fillText("#", pad + 8, y + 24);
   ctx.fillText(`Time (${RESORT_TIME_ABBREV})`, pad + colN + 8, y + 24);
   ctx.fillText("Ride", pad + colN + colTime + 8, y + 24);
@@ -1345,7 +1345,7 @@ async function renderUpdateImagePng(ch) {
       ctx.stroke();
 
       ctx.fillStyle = "#111827";
-      ctx.font = "700 16px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+      ctx.font = "700 20px system-ui, -apple-system, Segoe UI, Roboto, Arial";
       ctx.textAlign = "center";
       ctx.fillText(formatDateResortLong(eventDate), pad + tableW / 2, rowTop + 23);
       ctx.textAlign = "start";
@@ -1372,7 +1372,7 @@ async function renderUpdateImagePng(ch) {
 
     // Text
     ctx.fillStyle = "#111827";
-    ctx.font = "500 18px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+    ctx.font = "500 20px system-ui, -apple-system, Segoe UI, Roboto, Arial";
 
     const ty = rowTop + 23;
     const timeStr = e.timeISO ? formatTimeResort(new Date(e.timeISO)) : "";
