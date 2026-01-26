@@ -1259,8 +1259,6 @@ async function renderUpdateImagePng(ch) {
 
   const headerText = headerLine;
   
-  const asOfDate = lastEvent?.timeISO ? new Date(lastEvent.timeISO) : new Date();
-
   // Count date separator rows (inserted before first ride of a new day in resort TZ)
   let extraDateRows = 0;
   let prevKey = null;
@@ -1275,7 +1273,7 @@ async function renderUpdateImagePng(ch) {
   // Layout constants (keep your existing values if they differ)
   const W = 880;
   const pad = 24;
-  const headH = 72;
+  const headH = 48;
   const headerRowH = 34;
   const rowH = 34;
 
