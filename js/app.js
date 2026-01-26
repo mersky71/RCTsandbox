@@ -1240,25 +1240,26 @@ async function renderUpdateImagePng(ch) {
   const events = (ch?.events || []).slice();
   const lastEvent = events.length ? events[events.length - 1] : null;
 
+
   const asOfDate = lastEvent?.timeISO ? new Date(lastEvent.timeISO) : new Date();
 
-  // Header line 1: challenge start date (prefer dayKey)
+  // Start date label (challenge started)
   const startDateLabel = ch?.dayKey
     ? formatDayKeyLong(ch.dayKey)
     : (ch?.startedAt ? formatDateResortLong(new Date(ch.startedAt)) : formatDateResortLong(asOfDate));
 
-  const headerLine1 = startDateLabel;
-
-  // Header line 2: X rides as of TIME [+ DATE only if different day]
   const asOfTimeStr = formatTimeResort(asOfDate);
   const asOfDateStr = formatDateResortLong(asOfDate);
 
-  const headerLine2 =
+  // Single combined header line (no second dot before the as-of date)
+  const headerLine =
     asOfDateStr === startDateLabel
-      ? `${events.length} rides as of ${asOfTimeStr}`
-      : `${events.length} rides as of ${asOfTimeStr} · ${asOfDateStr}`;
+      ? `${startDateLabel} · ${events.length} rides as of ${asOfTimeStr}`
+      : `${startDateLabel} · ${events.length} rides as of ${asOfTimeStr} ${asOfDateStr}`;
 
-  const headerText = `${headerLine1}\n${headerLine2}`;
+  const headerText = headerLine;
+  
+  const asOfDate = lastEvent?.timeISO ? new Date(lastEvent.timeISO) : new Date();
 
   // Count date separator rows (inserted before first ride of a new day in resort TZ)
   let extraDateRows = 0;
@@ -1297,11 +1298,8 @@ async function renderUpdateImagePng(ch) {
   // Header
   ctx.fillStyle = "#111827";
   ctx.font = "800 28px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  ctx.fillText(headerLine1, pad, pad + 32);
-
-  ctx.font = "600 24px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  ctx.fillText(headerLine2, pad, pad + 58);
-
+  ctx.fillText(headerLine, pad, pad + 36);
+  
   // Table header row
   let y = pad + headH;
   const tableW = W - pad * 2;
