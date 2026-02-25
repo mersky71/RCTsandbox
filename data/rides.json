@@ -7,7 +7,8 @@
     "sortKey": "Astro Orbiter",
     "ll": false,
     "sr": false,
-    "active": true
+    "active": true,
+    "resort": "wdw"
   },
   {
     "id": "mk_barnstormer",
@@ -17,7 +18,8 @@
     "sortKey": "Barnstormer",
     "ll": true,
     "sr": false,
-    "active": true
+    "active": true,
+    "resort": "wdw"
   },
   {
     "id": "mk_btmr",
@@ -27,7 +29,8 @@
     "sortKey": "Big Thunder Mountain Railroad",
     "ll": true,
     "sr": false,
-    "active": true
+    "active": true,
+    "resort": "wdw"
   },
   {
     "id": "mk_buzz",
@@ -38,7 +41,8 @@
     "sortKey": "Buzz Lightyear’s Space Ranger Spin",
     "ll": true,
     "sr": false,
-    "active": true
+    "active": true,
+    "resort": "wdw"
   },
   {
     "id": "mk_dumbo",
@@ -48,7 +52,8 @@
     "sortKey": "Dumbo the Flying Elephant",
     "ll": true,
     "sr": false,
-    "active": true
+    "active": true,
+    "resort": "wdw"
   },
   {
     "id": "mk_haunted_mansion",
@@ -58,7 +63,8 @@
     "sortKey": "Haunted Mansion",
     "ll": true,
     "sr": false,
-    "active": true
+    "active": true,
+    "resort": "wdw"
   },
   {
     "id": "mk_iasw",
@@ -68,7 +74,8 @@
     "sortKey": "its a small world",
     "ll": true,
     "sr": false,
-    "active": true
+    "active": true,
+    "resort": "wdw"
   },
   {
     "id": "mk_jungle_cruise",
@@ -78,7 +85,8 @@
     "sortKey": "Jungle Cruise",
     "ll": true,
     "sr": false,
-    "active": true
+    "active": true,
+    "resort": "wdw"
   },
   {
     "id": "mk_mad_tea_party",
@@ -88,7 +96,8 @@
     "sortKey": "Mad Tea Party",
     "ll": true,
     "sr": false,
-    "active": true
+    "active": true,
+    "resort": "wdw"
   },
   {
     "id": "mk_magic_carpets",
@@ -99,7 +108,8 @@
     "mediumName": "Magic Carpets of Aladdin",
     "ll": true,
     "sr": false,
-    "active": true
+    "active": true,
+    "resort": "wdw"
   },
   {
     "id": "mk_main_street_vehicles",
@@ -109,7 +119,8 @@
     "sortKey": "Main Street Vehicles",
     "ll": false,
     "sr": false,
-    "active": true
+    "active": true,
+    "resort": "wdw"
   },
   {
     "id": "mk_pooh",
@@ -120,7 +131,8 @@
     "sortKey": "Many Adventures of Winnie the Pooh",
     "ll": true,
     "sr": false,
-    "active": true
+    "active": true,
+    "resort": "wdw"
   },
   {
     "id": "mk_peter_pan",
@@ -130,7 +142,8 @@
     "sortKey": "Peter Pans Flight",
     "ll": true,
     "sr": false,
-    "active": true
+    "active": true,
+    "resort": "wdw"
   },
   {
     "id": "mk_pirates",
@@ -140,7 +153,8 @@
     "sortKey": "Pirates of the Caribbean",
     "ll": true,
     "sr": false,
-    "active": true
+    "active": true,
+    "resort": "wdw"
   },
   {
     "id": "mk_carrousel",
@@ -150,7 +164,8 @@
     "sortKey": "Prince Charming Regal Carrousel",
     "ll": false,
     "sr": false,
-    "active": true
+    "active": true,
+    "resort": "wdw"
   },
   {
     "id": "mk_7dmt",
@@ -160,7 +175,8 @@
     "sortKey": "Seven Dwarfs Mine Train",
     "ll": true,
     "sr": false,
-    "active": true
+    "active": true,
+    "resort": "wdw"
   },
   {
     "id": "mk_space_mountain",
@@ -170,7 +186,8 @@
     "sortKey": "Space Mountain",
     "ll": true,
     "sr": false,
-    "active": true
+    "active": true,
+    "resort": "wdw"
   },
   {
     "id": "mk_tiana",
@@ -180,7 +197,8 @@
     "sortKey": "Tianas Bayou Adventure",
     "ll": true,
     "sr": false,
-    "active": true
+    "active": true,
+    "resort": "wdw"
   },
   {
     "id": "mk_speedway",
@@ -190,7 +208,8 @@
     "sortKey": "Tomorrowland Speedway",
     "ll": true,
     "sr": false,
-    "active": true
+    "active": true,
+    "resort": "wdw"
   },
   {
     "id": "mk_peoplemover",
@@ -201,7 +220,8 @@
     "sortKey": "Tomorrowland Transit Authority PeopleMover",
     "ll": false,
     "sr": false,
-    "active": true
+    "active": true,
+    "resort": "wdw"
   },
   {
     "id": "mk_tron",
@@ -211,7 +231,8 @@
     "sortKey": "TRON Lightcycle / Run",
     "ll": true,
     "sr": false,
-    "active": true
+    "active": true,
+    "resort": "wdw"
   },
   {
     "id": "mk_mermaid",
@@ -222,7 +243,8 @@
     "sortKey": "Under the Sea – Journey of the Little Mermaid",
     "ll": true,
     "sr": false,
-    "active": true
+    "active": true,
+    "resort": "wdw"
   },
   {
     "id": "mk_railroad",
@@ -233,7 +255,8 @@
     "sortKey": "Walt Disney World Railroad",
     "ll": false,
     "sr": false,
-    "active": true
+    "active": true,
+    "resort": "wdw"
   },
   {
     "id": "mk_cop",
@@ -243,7 +266,8 @@
     "sortKey": "Walt Disneys Carousel of Progress",
     "ll": false,
     "sr": false,
-    "active": true
+    "active": true,
+    "resort": "wdw"
   },
   {
     "id": "ep_frozen",
@@ -253,7 +277,8 @@
     "sortKey": "Frozen Ever After",
     "ll": true,
     "sr": false,
-    "active": true
+    "active": true,
+    "resort": "wdw"
   },
   {
     "id": "ep_gft",
@@ -264,7 +289,8 @@
     "sortKey": "Gran Fiesta Tour Starring The Three Caballeros",
     "ll": false,
     "sr": false,
-    "active": true
+    "active": true,
+    "resort": "wdw"
   },
   {
     "id": "ep_gotg",
@@ -274,7 +300,8 @@
     "sortKey": "Guardians of the Galaxy: Cosmic Rewind",
     "ll": true,
     "sr": false,
-    "active": true
+    "active": true,
+    "resort": "wdw"
   },
   {
     "id": "ep_figment",
@@ -284,7 +311,8 @@
     "sortKey": "Journey into Imagination with Figment",
     "ll": true,
     "sr": false,
-    "active": true
+    "active": true,
+    "resort": "wdw"
   },
   {
     "id": "ep_lwtl",
@@ -294,7 +322,8 @@
     "sortKey": "Living with the Land",
     "ll": true,
     "sr": false,
-    "active": true
+    "active": true,
+    "resort": "wdw"
   },
   {
     "id": "ep_mission_space",
@@ -304,7 +333,8 @@
     "sortKey": "Mission: SPACE",
     "ll": true,
     "sr": false,
-    "active": true
+    "active": true,
+    "resort": "wdw"
   },
   {
     "id": "ep_remy",
@@ -314,7 +344,8 @@
     "sortKey": "Remys Ratatouille Adventure",
     "ll": true,
     "sr": true,
-    "active": true
+    "active": true,
+    "resort": "wdw"
   },
   {
     "id": "ep_soarin",
@@ -324,7 +355,8 @@
     "sortKey": "Soarin’ Around the World",
     "ll": true,
     "sr": false,
-    "active": true
+    "active": true,
+    "resort": "wdw"
   },
   {
     "id": "ep_sse",
@@ -334,7 +366,8 @@
     "sortKey": "Spaceship Earth",
     "ll": true,
     "sr": false,
-    "active": true
+    "active": true,
+    "resort": "wdw"
   },
   {
     "id": "ep_test_track",
@@ -344,7 +377,8 @@
     "sortKey": "Test Track",
     "ll": true,
     "sr": true,
-    "active": true
+    "active": true,
+    "resort": "wdw"
   },
   {
     "id": "ep_nemo",
@@ -354,7 +388,8 @@
     "sortKey": "Seas with Nemo & Friends",
     "ll": true,
     "sr": false,
-    "active": true
+    "active": true,
+    "resort": "wdw"
   },
   {
     "id": "hs_saucers",
@@ -364,7 +399,8 @@
     "sortKey": "Alien Swirling Saucers",
     "ll": true,
     "sr": false,
-    "active": true
+    "active": true,
+    "resort": "wdw"
   },
   {
     "id": "hs_mfsr",
@@ -374,7 +410,8 @@
     "sortKey": "Millennium Falcon: Smugglers Run",
     "ll": true,
     "sr": true,
-    "active": true
+    "active": true,
+    "resort": "wdw"
   },
   {
     "id": "hs_mmrr",
@@ -385,7 +422,8 @@
     "sortKey": "Mickey & Minnie’s Runaway Railway",
     "ll": true,
     "sr": false,
-    "active": true
+    "active": true,
+    "resort": "wdw"
   },
   {
     "id": "hs_rnrc",
@@ -395,7 +433,8 @@
     "sortKey": "Rock ’n’ Roller Coaster",
     "ll": true,
     "sr": true,
-    "active": true
+    "active": true,
+    "resort": "wdw"
   },
   {
     "id": "hs_sdd",
@@ -405,7 +444,8 @@
     "sortKey": "Slinky Dog Dash",
     "ll": true,
     "sr": false,
-    "active": true
+    "active": true,
+    "resort": "wdw"
   },
   {
     "id": "hs_star_tours",
@@ -416,7 +456,8 @@
     "sortKey": "Star Tours – The Adventures Continue",
     "ll": true,
     "sr": false,
-    "active": true
+    "active": true,
+    "resort": "wdw"
   },
   {
     "id": "hs_rotr",
@@ -427,7 +468,8 @@
     "sortKey": "Star Wars: Rise of the Resistance",
     "ll": true,
     "sr": true,
-    "active": true
+    "active": true,
+    "resort": "wdw"
   },
   {
     "id": "hs_tot",
@@ -437,7 +479,8 @@
     "sortKey": "Twilight Zone Tower of Terror",
     "ll": true,
     "sr": false,
-    "active": true
+    "active": true,
+    "resort": "wdw"
   },
   {
     "id": "hs_tsm",
@@ -447,7 +490,8 @@
     "sortKey": "Toy Story Mania!",
     "ll": true,
     "sr": false,
-    "active": true
+    "active": true,
+    "resort": "wdw"
   },
   {
     "id": "ak_fop",
@@ -457,7 +501,8 @@
     "sortKey": "Avatar Flight of Passage",
     "ll": true,
     "sr": false,
-    "active": true
+    "active": true,
+    "resort": "wdw"
   },
   {
     "id": "ak_dinosaur",
@@ -467,7 +512,8 @@
     "sortKey": "DINOSAUR",
     "ll": true,
     "sr": false,
-    "active": false
+    "active": false,
+    "resort": "wdw"
   },
   {
     "id": "ak_ee",
@@ -477,7 +523,8 @@
     "sortKey": "Expedition Everest",
     "ll": true,
     "sr": true,
-    "active": true
+    "active": true,
+    "resort": "wdw"
   },
   {
     "id": "ak_krr",
@@ -487,7 +534,8 @@
     "sortKey": "Kali River Rapids",
     "ll": true,
     "sr": false,
-    "active": true
+    "active": true,
+    "resort": "wdw"
   },
   {
     "id": "ak_safari",
@@ -497,7 +545,8 @@
     "sortKey": "Kilimanjaro Safaris",
     "ll": true,
     "sr": false,
-    "active": true
+    "active": true,
+    "resort": "wdw"
   },
   {
     "id": "ak_nrj",
@@ -507,7 +556,8 @@
     "sortKey": "Navi River Journey",
     "ll": true,
     "sr": false,
-    "active": true
+    "active": true,
+    "resort": "wdw"
   },
   {
     "id": "ak_we_train",
@@ -517,6 +567,606 @@
     "sortKey": "Wildlife Express Train",
     "ll": false,
     "sr": false,
+    "active": true,
+    "resort": "wdw"
+  },
+  {
+    "id": "dlr_alice_in_wonderland",
+    "resort": "dlr",
+    "park": "dl",
+    "name": "Alice in Wonderland",
+    "shortName": "Alice in Wonderland",
+    "sortKey": "01 Alice in Wonderland",
+    "ll": false,
+    "sr": false,
     "active": true
+  },
+  {
+    "id": "dlr_astro_orbitor",
+    "resort": "dlr",
+    "park": "dl",
+    "name": "Astro Orbitor",
+    "shortName": "Astro Orbitor",
+    "sortKey": "02 Astro Orbitor",
+    "ll": false,
+    "sr": false,
+    "active": true
+  },
+  {
+    "id": "dlr_autopia",
+    "resort": "dlr",
+    "park": "dl",
+    "name": "Autopia",
+    "shortName": "Autopia",
+    "sortKey": "03 Autopia",
+    "ll": true,
+    "sr": false,
+    "active": true
+  },
+  {
+    "id": "dlr_big_thunder_mountain_railroad",
+    "resort": "dlr",
+    "park": "dl",
+    "name": "Big Thunder Mountain Railroad",
+    "shortName": "Big Thunder Mountain Railroad",
+    "sortKey": "04 Big Thunder Mountain Railroad",
+    "ll": true,
+    "sr": false,
+    "active": true
+  },
+  {
+    "id": "dlr_buzz_lightyear_astro_blasters",
+    "resort": "dlr",
+    "park": "dl",
+    "name": "Buzz Lightyear Astro Blasters",
+    "shortName": "Buzz Lightyear Astro Blasters",
+    "sortKey": "05 Buzz Lightyear Astro Blasters",
+    "ll": true,
+    "sr": false,
+    "active": true
+  },
+  {
+    "id": "dlr_casey_jr_circus_train",
+    "resort": "dlr",
+    "park": "dl",
+    "name": "Casey Jr. Circus Train",
+    "shortName": "Casey Jr. Circus Train",
+    "sortKey": "06 Casey Jr. Circus Train",
+    "ll": false,
+    "sr": false,
+    "active": true
+  },
+  {
+    "id": "dlr_chip_n_dales_go_coaster",
+    "resort": "dlr",
+    "park": "dl",
+    "name": "Chip 'n' Dale's Go Coaster",
+    "shortName": "Chip 'n' Dale's Go Coaster",
+    "sortKey": "07 Chip 'n' Dale's Go Coaster",
+    "ll": false,
+    "sr": false,
+    "active": true
+  },
+  {
+    "id": "dlr_davy_crocketts_explorer_canoes",
+    "resort": "dlr",
+    "park": "dl",
+    "name": "Davy Crockett's Explorer Canoes",
+    "shortName": "Davy Crockett's Explorer Canoes",
+    "sortKey": "08 Davy Crockett's Explorer Canoes",
+    "ll": false,
+    "sr": false,
+    "active": true
+  },
+  {
+    "id": "dlr_disneyland_monorail",
+    "resort": "dlr",
+    "park": "dl",
+    "name": "Disneyland Monorail",
+    "shortName": "Disneyland Monorail",
+    "sortKey": "09 Disneyland Monorail",
+    "ll": false,
+    "sr": false,
+    "active": true
+  },
+  {
+    "id": "dlr_disneyland_railroad",
+    "resort": "dlr",
+    "park": "dl",
+    "name": "Disneyland Railroad",
+    "shortName": "Disneyland Railroad",
+    "sortKey": "10 Disneyland Railroad",
+    "ll": false,
+    "sr": false,
+    "active": true
+  },
+  {
+    "id": "dlr_dumbo_the_flying_elephant",
+    "resort": "dlr",
+    "park": "dl",
+    "name": "Dumbo the Flying Elephant",
+    "shortName": "Dumbo the Flying Elephant",
+    "sortKey": "11 Dumbo the Flying Elephant",
+    "ll": false,
+    "sr": false,
+    "active": true
+  },
+  {
+    "id": "dlr_finding_nemo_submarine_voyage",
+    "resort": "dlr",
+    "park": "dl",
+    "name": "Finding Nemo Submarine Voyage",
+    "shortName": "Finding Nemo Submarine Voyage",
+    "sortKey": "12 Finding Nemo Submarine Voyage",
+    "ll": false,
+    "sr": false,
+    "active": true
+  },
+  {
+    "id": "dlr_haunted_mansion",
+    "resort": "dlr",
+    "park": "dl",
+    "name": "Haunted Mansion",
+    "shortName": "Haunted Mansion",
+    "sortKey": "13 Haunted Mansion",
+    "ll": true,
+    "sr": false,
+    "active": true
+  },
+  {
+    "id": "dlr_indiana_jones_adventure",
+    "resort": "dlr",
+    "park": "dl",
+    "name": "Indiana Jones Adventure",
+    "shortName": "Indy",
+    "sortKey": "14 Indy",
+    "ll": true,
+    "sr": true,
+    "active": true
+  },
+  {
+    "id": "dlr_its_a_small_world",
+    "resort": "dlr",
+    "park": "dl",
+    "name": "\"it's a small world\"",
+    "shortName": "Small World",
+    "sortKey": "15 Small World",
+    "ll": true,
+    "sr": false,
+    "active": true,
+    "mediumName": "it's a small world"
+  },
+  {
+    "id": "dlr_jungle_cruise",
+    "resort": "dlr",
+    "park": "dl",
+    "name": "Jungle Cruise",
+    "shortName": "Jungle Cruise",
+    "sortKey": "16 Jungle Cruise",
+    "ll": false,
+    "sr": false,
+    "active": true
+  },
+  {
+    "id": "dlr_king_arthur_carrousel",
+    "resort": "dlr",
+    "park": "dl",
+    "name": "King Arthur Carrousel",
+    "shortName": "King Arthur Carrousel",
+    "sortKey": "17 King Arthur Carrousel",
+    "ll": false,
+    "sr": false,
+    "active": true
+  },
+  {
+    "id": "dlr_mad_tea_party",
+    "resort": "dlr",
+    "park": "dl",
+    "name": "Mad Tea Party",
+    "shortName": "Mad Tea Party",
+    "sortKey": "18 Mad Tea Party",
+    "ll": false,
+    "sr": false,
+    "active": true
+  },
+  {
+    "id": "dlr_main_street_vehicles",
+    "resort": "dlr",
+    "park": "dl",
+    "name": "Main Street Vehicles",
+    "shortName": "Main Street Vehicles",
+    "sortKey": "19 Main Street Vehicles",
+    "ll": false,
+    "sr": false,
+    "active": true
+  },
+  {
+    "id": "dlr_the_many_adventures_of_winnie_the_pooh",
+    "resort": "dlr",
+    "park": "dl",
+    "name": "The Many Adventures of Winnie the Pooh",
+    "shortName": "Many Adventures of Winnie the Pooh",
+    "sortKey": "20 Many Adventures of Winnie the Pooh",
+    "ll": false,
+    "sr": false,
+    "active": true
+  },
+  {
+    "id": "dlr_mark_twain_riverboat",
+    "resort": "dlr",
+    "park": "dl",
+    "name": "Mark Twain Riverboat",
+    "shortName": "Mark Twain Riverboat",
+    "sortKey": "21 Mark Twain Riverboat",
+    "ll": false,
+    "sr": false,
+    "active": true
+  },
+  {
+    "id": "dlr_matterhorn_bobsleds",
+    "resort": "dlr",
+    "park": "dl",
+    "name": "Matterhorn Bobsleds",
+    "shortName": "Matterhorn Bobsleds",
+    "sortKey": "22 Matterhorn Bobsleds",
+    "ll": true,
+    "sr": true,
+    "active": true
+  },
+  {
+    "id": "dlr_mickey_and_minnies_runaway_railway",
+    "resort": "dlr",
+    "park": "dl",
+    "name": "Mickey & Minnie's Runaway Railway",
+    "shortName": "Runaway Railway",
+    "sortKey": "23 Runaway Railway",
+    "ll": true,
+    "sr": false,
+    "active": true
+  },
+  {
+    "id": "dlr_millennium_falcon_smugglers_run",
+    "resort": "dlr",
+    "park": "dl",
+    "name": "Millennium Falcon: Smugglers Run",
+    "shortName": "Smugglers",
+    "sortKey": "24 Smugglers",
+    "ll": true,
+    "sr": true,
+    "active": true
+  },
+  {
+    "id": "dlr_mr_toads_wild_ride",
+    "resort": "dlr",
+    "park": "dl",
+    "name": "Mr. Toad's Wild Ride",
+    "shortName": "Mr. Toad's Wild Ride",
+    "sortKey": "25 Mr. Toad's Wild Ride",
+    "ll": false,
+    "sr": false,
+    "active": true
+  },
+  {
+    "id": "dlr_peter_pans_flight",
+    "resort": "dlr",
+    "park": "dl",
+    "name": "Peter Pan's Flight",
+    "shortName": "Peter Pan's Flight",
+    "sortKey": "26 Peter Pan's Flight",
+    "ll": false,
+    "sr": false,
+    "active": true
+  },
+  {
+    "id": "dlr_pinocchios_daring_journey",
+    "resort": "dlr",
+    "park": "dl",
+    "name": "Pinocchio's Daring Journey",
+    "shortName": "Pinocchio's Daring Journey",
+    "sortKey": "27 Pinocchio's Daring Journey",
+    "ll": false,
+    "sr": false,
+    "active": true
+  },
+  {
+    "id": "dlr_pirates_of_the_caribbean",
+    "resort": "dlr",
+    "park": "dl",
+    "name": "Pirates of the Caribbean",
+    "shortName": "Pirates of the Caribbean",
+    "sortKey": "28 Pirates of the Caribbean",
+    "ll": false,
+    "sr": false,
+    "active": true
+  },
+  {
+    "id": "dlr_roger_rabbits_car_toon_spin",
+    "resort": "dlr",
+    "park": "dl",
+    "name": "Roger Rabbit's Car Toon Spin",
+    "shortName": "Roger Rabbit's Car Toon Spin",
+    "sortKey": "29 Roger Rabbit's Car Toon Spin",
+    "ll": true,
+    "sr": false,
+    "active": true
+  },
+  {
+    "id": "dlr_sailing_ship_columbia",
+    "resort": "dlr",
+    "park": "dl",
+    "name": "Sailing Ship Columbia",
+    "shortName": "Sailing Ship Columbia",
+    "sortKey": "30 Sailing Ship Columbia",
+    "ll": false,
+    "sr": false,
+    "active": true
+  },
+  {
+    "id": "dlr_snow_whites_enchanted_wish",
+    "resort": "dlr",
+    "park": "dl",
+    "name": "Snow White's Enchanted Wish",
+    "shortName": "Snow White's Enchanted Wish",
+    "sortKey": "31 Snow White's Enchanted Wish",
+    "ll": false,
+    "sr": false,
+    "active": true
+  },
+  {
+    "id": "dlr_space_mountain",
+    "resort": "dlr",
+    "park": "dl",
+    "name": "Space Mountain",
+    "shortName": "Space Mountain",
+    "sortKey": "32 Space Mountain",
+    "ll": true,
+    "sr": true,
+    "active": true
+  },
+  {
+    "id": "dlr_star_tours_the_adventures_continue",
+    "resort": "dlr",
+    "park": "dl",
+    "name": "Star Tours — The Adventures Continue",
+    "shortName": "Star Tours",
+    "sortKey": "33 Star Tours",
+    "ll": true,
+    "sr": false,
+    "active": true
+  },
+  {
+    "id": "dlr_star_wars_rise_of_the_resistance",
+    "resort": "dlr",
+    "park": "dl",
+    "name": "Star Wars: Rise of the Resistance",
+    "shortName": "ROTR",
+    "sortKey": "34 ROTR",
+    "ll": true,
+    "sr": false,
+    "active": true,
+    "mediumName": "Rise of the Resistance"
+  },
+  {
+    "id": "dlr_storybook_land_canal_boats",
+    "resort": "dlr",
+    "park": "dl",
+    "name": "Storybook Land Canal Boats",
+    "shortName": "Storybook Land Canal Boats",
+    "sortKey": "35 Storybook Land Canal Boats",
+    "ll": false,
+    "sr": false,
+    "active": true
+  },
+  {
+    "id": "dlr_tianas_bayou_adventure",
+    "resort": "dlr",
+    "park": "dl",
+    "name": "Tiana's Bayou Adventure",
+    "shortName": "Tiana's Bayou Adventure",
+    "sortKey": "36 Tiana's Bayou Adventure",
+    "ll": true,
+    "sr": true,
+    "active": true
+  },
+  {
+    "id": "dlr_golden_zephyr",
+    "resort": "dlr",
+    "park": "dca",
+    "name": "Golden Zephyr",
+    "shortName": "Golden Zephyr",
+    "sortKey": "01 Golden Zephyr",
+    "ll": false,
+    "sr": false,
+    "active": true
+  },
+  {
+    "id": "dlr_goofys_sky_school",
+    "resort": "dlr",
+    "park": "dca",
+    "name": "Goofy's Sky School",
+    "shortName": "Goofy's Sky School",
+    "sortKey": "02 Goofy's Sky School",
+    "ll": true,
+    "sr": true,
+    "active": true
+  },
+  {
+    "id": "dlr_grizzly_river_run",
+    "resort": "dlr",
+    "park": "dca",
+    "name": "Grizzly River Run",
+    "shortName": "Grizzly River Run",
+    "sortKey": "03 Grizzly River Run",
+    "ll": true,
+    "sr": true,
+    "active": true
+  },
+  {
+    "id": "dlr_guardians_of_the_galaxy_mission_breakout",
+    "resort": "dlr",
+    "park": "dca",
+    "name": "Guardians of the Galaxy — Mission: BREAKOUT!",
+    "shortName": "Guardians",
+    "sortKey": "04 Guardians",
+    "ll": true,
+    "sr": false,
+    "active": true,
+    "mediumName": "Guardians of the Galaxy"
+  },
+  {
+    "id": "dlr_the_incredicoaster",
+    "resort": "dlr",
+    "park": "dca",
+    "name": "The Incredicoaster",
+    "shortName": "Incredicoaster",
+    "sortKey": "05 Incredicoaster",
+    "ll": true,
+    "sr": true,
+    "active": true
+  },
+  {
+    "id": "dlr_inside_out_emotional_whirlwind",
+    "resort": "dlr",
+    "park": "dca",
+    "name": "Inside Out Emotional Whirlwind",
+    "shortName": "Inside Out Emotional Whirlwind",
+    "sortKey": "06 Inside Out Emotional Whirlwind",
+    "ll": false,
+    "sr": false,
+    "active": true
+  },
+  {
+    "id": "dlr_jessies_critter_carousel",
+    "resort": "dlr",
+    "park": "dca",
+    "name": "Jessie's Critter Carousel",
+    "shortName": "Jessie's Critter Carousel",
+    "sortKey": "07 Jessie's Critter Carousel",
+    "ll": false,
+    "sr": false,
+    "active": true
+  },
+  {
+    "id": "dlr_jumpin_jellyfish",
+    "resort": "dlr",
+    "park": "dca",
+    "name": "Jumpin' Jellyfish",
+    "shortName": "Jumpin' Jellyfish",
+    "sortKey": "08 Jumpin' Jellyfish",
+    "ll": false,
+    "sr": false,
+    "active": true
+  },
+  {
+    "id": "dlr_the_little_mermaid_ariels_undersea_adventure",
+    "resort": "dlr",
+    "park": "dca",
+    "name": "The Little Mermaid ~ Ariel's Undersea Adventure",
+    "shortName": "Little Mermaid",
+    "sortKey": "09 Little Mermaid",
+    "ll": true,
+    "sr": false,
+    "active": true,
+    "mediumName": "The Little Mermaid"
+  },
+  {
+    "id": "dlr_luigis_rollickin_roadsters",
+    "resort": "dlr",
+    "park": "dca",
+    "name": "Luigi's Rollickin Roadsters",
+    "shortName": "Luigi's Rollickin Roadsters",
+    "sortKey": "10 Luigi's Rollickin Roadsters",
+    "ll": false,
+    "sr": false,
+    "active": true
+  },
+  {
+    "id": "dlr_maters_junkyard_jamboree",
+    "resort": "dlr",
+    "park": "dca",
+    "name": "Mater's Junkyard Jamboree",
+    "shortName": "Mater's Junkyard Jamboree",
+    "sortKey": "11 Mater's Junkyard Jamboree",
+    "ll": false,
+    "sr": false,
+    "active": true
+  },
+  {
+    "id": "dlr_monsters_inc_mike_and_sulley_to_the_rescue",
+    "resort": "dlr",
+    "park": "dca",
+    "name": "Monsters, Inc. Mike & Sulley to the Rescue!",
+    "shortName": "Monsters, Inc. Mike & Sulley to the Rescue!",
+    "sortKey": "12 Monsters, Inc. Mike & Sulley to the Rescue!",
+    "ll": true,
+    "sr": false,
+    "active": true
+  },
+  {
+    "id": "dlr_pixar_pal_a_round",
+    "resort": "dlr",
+    "park": "dca",
+    "name": "Pixar Pal-A-Round",
+    "shortName": "Pixar Pal-A-Round",
+    "sortKey": "13 Pixar Pal-A-Round",
+    "ll": false,
+    "sr": false,
+    "active": true
+  },
+  {
+    "id": "dlr_radiator_springs_racers",
+    "resort": "dlr",
+    "park": "dca",
+    "name": "Radiator Springs Racers",
+    "shortName": "RSR",
+    "sortKey": "14 RSR",
+    "ll": true,
+    "sr": true,
+    "active": true
+  },
+  {
+    "id": "dlr_silly_symphony_swings",
+    "resort": "dlr",
+    "park": "dca",
+    "name": "Silly Symphony Swings",
+    "shortName": "Silly Symphony Swings",
+    "sortKey": "15 Silly Symphony Swings",
+    "ll": false,
+    "sr": false,
+    "active": true
+  },
+  {
+    "id": "dlr_soarin_around_the_world",
+    "resort": "dlr",
+    "park": "dca",
+    "name": "Soarin' Around the World",
+    "shortName": "Soarin' Around the World",
+    "sortKey": "16 Soarin' Around the World",
+    "ll": true,
+    "sr": false,
+    "active": true
+  },
+  {
+    "id": "dlr_toy_story_midway_mania",
+    "resort": "dlr",
+    "park": "dca",
+    "name": "Toy Story Midway Mania!",
+    "shortName": "Toy Story Midway Mania!",
+    "sortKey": "17 Toy Story Midway Mania!",
+    "ll": true,
+    "sr": false,
+    "active": true
+  },
+  {
+    "id": "dlr_web_slingers_a_spider_man_adventure",
+    "resort": "dlr",
+    "park": "dca",
+    "name": "Web Slingers – A Spider-Man Adventure",
+    "shortName": "WEB SLINGERS",
+    "sortKey": "18 WEB SLINGERS",
+    "ll": true,
+    "sr": true,
+    "active": true,
+    "mediumName": "Web Slingers"
   }
 ]
