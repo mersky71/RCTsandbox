@@ -188,7 +188,7 @@ function renderResortSelectPage() {
     renderStartPage("dlr");
     setHeaderEnabled(false);
     applyParkTheme("home");
-  };
+  });
 }
 
 function setupParksDropdown() {
