@@ -119,10 +119,11 @@ async function init() {
   setupMoreMenu();
   setupAutoScrollToTopOnReturnIfParkComplete();
 
-  rides = await fetch("./data/rides.json").then(r => r.json());
-  rides = rides.filter(r => r.active !== false);
-
-  ridesById = new Map(rides.map(r => [r.id, r]));
+  const allRides = await fetch("./data/rides.json").then(r => r.json());
+  // 'rides' drives the live UI (active attractions only)
+  rides = allRides.filter(r => r.active !== false);
+  // 'ridesById' must include inactive rides so historic runs (and images) still render correctly
+  ridesById = new Map(allRides.map(r => [r.id, r]));
 
   active = loadActiveChallenge();
 
@@ -1273,7 +1274,7 @@ async function renderUpdateImagePng(ch) {
   // Layout constants (keep your existing values if they differ)
   const W = 880;
   const pad = 24;
-  const headH = 48;
+  const headH = 60;
   const headerRowH = 34;
   const rowH = 34;
 
@@ -1693,8 +1694,4 @@ function escapeHtml(s) {
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 }
-
-
-
-
 
