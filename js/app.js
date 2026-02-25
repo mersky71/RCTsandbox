@@ -115,7 +115,10 @@ async function init() {
   setupMoreMenu();
   setupAutoScrollToTopOnReturnIfParkComplete();
 
-  allRides = await fetch("./data/rides.json").then(r => r.json());
+  // IMPORTANT: app.js is loaded from ./js/, so data is one level up.
+  // Using import.meta.url makes this robust even if the app is hosted in a subfolder.
+  const ridesUrl = new URL("../data/rides.json", import.meta.url);
+  allRides = await fetch(ridesUrl).then(r => r.json());
   // Map includes ALL rides (inactive + all resorts) so historical runs still render correctly
   ridesById = new Map(allRides.map(r => [r.id, r]));
 
@@ -188,7 +191,7 @@ function renderResortSelectPage() {
     renderStartPage("dlr");
     setHeaderEnabled(false);
     applyParkTheme("home");
-  });
+  };
 }
 
 function setupParksDropdown() {
