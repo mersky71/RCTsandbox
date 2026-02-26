@@ -1577,7 +1577,7 @@ function openDialog({ title, body, content, buttons }) {
 
   buttons.forEach((b, i) => {
     dialogHost.querySelector(`[data-dbtn="${i}"]`)?.addEventListener("click", b.action);
-  };
+  });
 }
 
 function closeDialog() {
