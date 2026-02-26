@@ -33,10 +33,10 @@ Help me support @GKTWVillage by donating at the link below`
     name: "Disneyland Resort",
     parks: [
       { id: "dl", name: "Disneyland Park" },
-      { id: "dca", name: "Disney California Adventure" }
+      { id: "dca", name: "California Adventure" }
     ],
     startDefaults: {
-      tagsText: `#EveryRideDLR
+      tagsText: `#EveryRideDLR @RideEvery
 
 Help me support @GKTWVillage by donating at the link below`
     }
@@ -161,8 +161,17 @@ function setRidesForResort(resortId) {
 }
 
 function renderResortSelectPage() {
+  applyParkTheme("home");
+  setHeaderEnabled(false);
   appEl.innerHTML = `
     <div class="stack startPage">
+      <div class="card">
+        <div class="h1">Welcome</div>
+        <p class="p">
+          This app may help you track your challenge run and generate draft tweets for you.
+        </p>
+      </div>
+
       <div class="card">
         <div class="h1">Choose your resort</div>
         <p class="p">Select which resort you are challenging today.</p>
@@ -175,19 +184,11 @@ function renderResortSelectPage() {
   `;
 
   document.getElementById("chooseWDW")?.addEventListener("click", () => {
-    setRidesForResort("wdw");
-    setupParksDropdown();
-    renderStartPage("wdw");
-    setHeaderEnabled(false);
-    applyParkTheme("home");
+    navigateToResort("wdw");
   });
 
   document.getElementById("chooseDLR")?.addEventListener("click", () => {
-    setRidesForResort("dlr");
-    setupParksDropdown();
-    renderStartPage("dlr");
-    setHeaderEnabled(false);
-    applyParkTheme("home");
+    navigateToResort("dlr");
   });
 }
 
@@ -448,6 +449,114 @@ function setHeaderEnabled(enabled) {
   moreBtn.disabled = !enabled;
 }
 
+/* ==========================
+   Navigation (SPA history)
+   ========================== */
+
+function navigateToHome(replace = false) {
+  if (replace) {
+    history.replaceState({ page: "home" }, "");
+  } else {
+    history.pushState({ page: "home" }, "");
+  }
+  currentResort = null;
+  active = null;
+  renderResortSelectPage();
+}
+
+function navigateToResort(resortId, replace = false) {
+  const st = { page: "resort", resortId };
+  if (replace) {
+    history.replaceState(st, "");
+  } else {
+    history.pushState(st, "");
+  }
+  setRidesForResort(resortId);
+  setupParksDropdown();
+  renderStartPage(resortId);
+}
+
+// Handle browser back/forward
+window.addEventListener("popstate", (e) => {
+  const st = e.state;
+  if (!st || st.page === "home") {
+    renderResortSelectPage();
+    return;
+  }
+  if (st.page === "resort") {
+    navigateToResort(st.resortId || "wdw", true);
+    return;
+  }
+});
+
+/* ==========================
+   Resume helpers
+   ========================== */
+
+function getMostRecentHistoryEntryForResort(resortId) {
+  const hist = loadChallengeHistory().filter(x => (x.resortId || "wdw") === resortId);
+  if (!hist.length) return null;
+  return hist.reduce((best, cur) => {
+    const tb = Date.parse(best.endedAt || best.startedAt || "") || 0;
+    const tc = Date.parse(cur.endedAt || cur.startedAt || "") || 0;
+    return tc > tb ? cur : best;
+  }, hist[0]);
+}
+
+function isWithinHours(historyEntry, hours) {
+  const t = Date.parse(historyEntry.endedAt || historyEntry.startedAt || "") || 0;
+  if (!t) return false;
+  const ms = hours * 60 * 60 * 1000;
+  return (Date.now() - t) <= ms;
+}
+
+// Match storage.js 3am cutoff behavior
+function computeDayKeyNow() {
+  const now = new Date();
+  const cutoffHour = 3;
+  const d = new Date(now);
+  if (d.getHours() < cutoffHour) {
+    d.setDate(d.getDate() - 1);
+  }
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function resumeHistoryChallenge(historyEntry) {
+  // Clone history into an active challenge
+  const resumed = JSON.parse(JSON.stringify(historyEntry || {}));
+  resumed.saved = false;
+  delete resumed.endedAt;
+
+  resumed.dayKey = computeDayKeyNow();
+  resumed.resortId = resumed.resortId || currentResort || "wdw";
+
+  // Ensure settings exist
+  resumed.settings = resumed.settings || {};
+  resumed.tagsText = resumed.tagsText || resumed.settings.tagsText || "";
+  resumed.fundraisingLink = resumed.fundraisingLink || resumed.settings.fundraisingLink || "";
+
+  // Persist as active
+  active = resumed;
+  saveActiveChallenge(active);
+
+  // Choose a sensible park (park of last event, else first park)
+  let parkId = (getParksForResort(resumed.resortId)[0]?.id) || "mk";
+  if (Array.isArray(resumed.events) && resumed.events.length) {
+    const last = resumed.events[resumed.events.length - 1];
+    const ride = ridesById.get(last.rideId);
+    if (ride?.park) parkId = ride.park;
+  }
+
+  setHeaderEnabled(true);
+  currentResort = resumed.resortId;
+  setupParksDropdown();
+  setPark(parkId);
+  renderParkPage(parkId);
+}
+
 function applyParkTheme(parkId) {
   const t = PARK_THEME[parkId] || PARK_THEME.mk;
   document.documentElement.style.setProperty("--park", t.park);
@@ -457,6 +566,8 @@ function applyParkTheme(parkId) {
 
 function renderStartPage(resortId = currentResort || "wdw") {
   setRidesForResort(resortId);
+  applyParkTheme(resortId === "dlr" ? "dlrHome" : "wdwHome");
+  setHeaderEnabled(false);
   const resort = getResort(resortId);
   const defaultTags = resort.startDefaults?.tagsText || "";
   const defaultPark = getParksForResort(resortId)[0]?.id || "mk";
@@ -464,14 +575,19 @@ function renderStartPage(resortId = currentResort || "wdw") {
   appEl.innerHTML = `
     <div class="stack startPage">
       <div class="card">
-        <div class="h1">Welcome</div>
+        <div class="btnRow" style="justify-content:flex-start; gap:10px;">
+          <button id="backToResortsBtn" class="btn btnSecondary" type="button">Back</button>
+        </div>
+        <div class="h1">Every Ride ${resortId.toUpperCase()} Challenge</div>
         <p class="p">
-          This experimental app helps track rides and generate draft tweets for an Every Ride Challenge.
+          This app may help you track your ${resortId.toUpperCase()} challenge run and generate draft tweets for you.
         </p>
         <p class="p" style="margin-top:10px;">
-          There may be bugs -- if it breaks down, please be prepared to compose ride tweets manually!
+          Modify tags and hashtags and add a link to your fundraising page below.
         </p>
       </div>
+
+      <div id="resumeCardHost"></div>
 
       <div class="card">
         <div class="h1">Start a new challenge</div>
@@ -498,7 +614,39 @@ function renderStartPage(resortId = currentResort || "wdw") {
           <button id="startBtn" class="btn btnPrimary" type="button">Start new challenge</button>
           <button id="viewSavedBtn" class="btn btnPrimary" type="button">Previous challenges</button>
         </div>
-      </div>
+  
+  // Back to resort selection
+  document.getElementById("backToResortsBtn")?.addEventListener("click", () => {
+    navigateToHome();
+  });
+
+  // Resume most recent challenge (within last 36 hours) for this resort
+  const resumeHost = document.getElementById("resumeCardHost");
+  if (resumeHost) {
+    const mostRecent = getMostRecentHistoryEntryForResort(resortId);
+    const isRecent = mostRecent && isWithinHours(mostRecent, 36);
+    if (isRecent) {
+      const when = Date.parse(mostRecent.endedAt || mostRecent.startedAt || "") || 0;
+      const ridesLogged = Array.isArray(mostRecent.events) ? mostRecent.events.length : 0;
+
+      resumeHost.innerHTML = `
+        <div class="card">
+          <div class="h1">Resume</div>
+          <p class="p">Most recent ${resortId.toUpperCase()} challenge (${ridesLogged} rides logged).</p>
+          <div class="btnRow" style="margin-top:12px;">
+            <button id="resumeBtn" class="btn btnPrimary" type="button">Resume most recent challenge</button>
+          </div>
+        </div>
+      `;
+
+      document.getElementById("resumeBtn")?.addEventListener("click", () => {
+        resumeHistoryChallenge(mostRecent);
+      });
+    } else {
+      resumeHost.innerHTML = "";
+    }
+  }
+    </div>
     </div>
   `;
 
