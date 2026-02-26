@@ -549,7 +549,7 @@ function renderStartPage(resortId = currentResort || "wdw") {
 
   document.getElementById("viewSavedBtn")?.addEventListener("click", () => {
     openSavedChallengesDialog();
-  };
+  });
 }
 
 function openExcludedRidesDialog({ excludedIds, parkFilter, persistMode = "draft" }) {
