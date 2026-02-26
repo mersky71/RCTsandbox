@@ -1413,7 +1413,7 @@ function showUpdateImageDialog({ blob, headerText }) {
     } catch {
       // user cancelled or share failed
     }
-  };
+  });
 }
 
 /* ==========================
