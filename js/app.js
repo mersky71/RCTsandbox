@@ -614,6 +614,9 @@ function renderStartPage(resortId = currentResort || "wdw") {
           <button id="startBtn" class="btn btnPrimary" type="button">Start new challenge</button>
           <button id="viewSavedBtn" class="btn btnPrimary" type="button">Previous challenges</button>
         </div>
+          </div>
+        </div>
+      `;
   
   // Back to resort selection
   document.getElementById("backToResortsBtn")?.addEventListener("click", () => {
@@ -635,9 +638,6 @@ function renderStartPage(resortId = currentResort || "wdw") {
           <p class="p">Most recent ${resortId.toUpperCase()} challenge (${ridesLogged} rides logged).</p>
           <div class="btnRow" style="margin-top:12px;">
             <button id="resumeBtn" class="btn btnPrimary" type="button">Resume most recent challenge</button>
-          </div>
-        </div>
-      `;
 
       document.getElementById("resumeBtn")?.addEventListener("click", () => {
         resumeHistoryChallenge(mostRecent);
