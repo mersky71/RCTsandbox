@@ -897,7 +897,7 @@ function openSavedChallengesDialog() {
         }
       });
     });
-  };
+  });
 }
 
 /* ==========================
