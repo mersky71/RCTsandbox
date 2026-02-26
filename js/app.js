@@ -638,7 +638,11 @@ function renderStartPage(resortId = currentResort || "wdw") {
           <p class="p">Most recent ${resortId.toUpperCase()} challenge (${ridesLogged} rides logged).</p>
           <div class="btnRow" style="margin-top:12px;">
             <button id="resumeBtn" class="btn btnPrimary" type="button">Resume most recent challenge</button>
+          </div>
+        </div>
+      `;
 
+      
       document.getElementById("resumeBtn")?.addEventListener("click", () => {
         resumeHistoryChallenge(mostRecent);
       });
@@ -646,9 +650,7 @@ function renderStartPage(resortId = currentResort || "wdw") {
       resumeHost.innerHTML = "";
     }
   }
-    </div>
-    </div>
-  `;
+
 
   // Update excluded counts on Start page
   const draftExcluded = new Set(loadExcludedDraftIds());
