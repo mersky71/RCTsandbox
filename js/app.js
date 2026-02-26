@@ -1534,7 +1534,7 @@ function openUndoEditDialog(ride, eventInfo) {
     body: "",
     content: "",
     buttons
-  };
+  });
 }
 
 /* ==========================
@@ -1554,7 +1554,7 @@ function openConfirmDialog({ title, body, confirmText, confirmClass, onConfirm }
       },
       { text: "Cancel", className: "btn", action: () => closeDialog() }
     ]
-  };
+  });
 }
 
 function openDialog({ title, body, content, buttons }) {
