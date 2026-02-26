@@ -589,9 +589,6 @@ function renderStartPage(resortId = currentResort || "wdw") {
   appEl.innerHTML = `
     <div class="stack startPage">
       <div class="card">
-        <div class="btnRow" style="justify-content:flex-start; gap:10px;">
-          <button id="backToResortsBtn" class="btn btnSecondary" type="button">Back</button>
-        </div>
         <div class="h1">Every Ride ${resortId.toUpperCase()} Challenge</div>
         <p class="p">
           This app may help you track your ${resortId.toUpperCase()} challenge run and generate draft tweets for you.
@@ -599,6 +596,9 @@ function renderStartPage(resortId = currentResort || "wdw") {
         <p class="p" style="margin-top:10px;">
           Modify tags and hashtags and add a link to your fundraising page below.
         </p>
+        <div class="btnRow" style="justify-content:flex-start; gap:10px;">
+          <button id="backToResortsBtn" class="btn btnPrimary" type="button">Back to resort selector</button>
+        </div>
       </div>
 
       <div id="resumeCardHost"></div>
