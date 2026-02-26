@@ -180,12 +180,20 @@ function renderResortSelectPage() {
 
       <div class="card">
         <div class="h1">Choose your resort</div>
-        <p class="p">Select which resort you are challenging today.</p>
+        <p class="p">Select the resort for your challenge today.</p>
         <div class="btnRow" style="margin-top:12px; gap:10px; flex-wrap:wrap;">
           <button id="chooseWDW" class="btn btnPrimary" type="button">Walt Disney World</button>
           <button id="chooseDLR" class="btn btnPrimary" type="button">Disneyland Resort</button>
         </div>
       </div>
+
+<div class="card">
+        <div class="h1">Notes</div>
+        <p class="p">
+          For some users with older iPhones, this app did not work because the phone wouldn't store the ride data. Have a backup plan in case this happens to you!
+        </p>
+      </div>    
+    
     </div>
   `;
 
