@@ -229,7 +229,7 @@ function setupAutoScrollToTopOnReturnIfParkComplete() {
 
   window.addEventListener("focus", () => {
     maybeScrollToTop();
-  };
+  });
 }
 
 
