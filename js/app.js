@@ -53,8 +53,12 @@ function getParksForResort(resortId) {
 
 // Park colors (CSS uses --park)
 const PARK_THEME = {
-  // Home/start page theme
+  // Home/start page theme (main landing page)
   home: { park: "#7c3aed", park2: "rgba(124,58,237,.12)", parkText: "#0b0f14" }, // Purple
+
+  // Resort landing page themes
+  wdwHome: { park: "#4E7FA8", park2: "rgba(78,127,168,.22)", parkText: "#0b0f14" }, // Slate blue
+  dlrHome: { park: "#C98A9A", park2: "rgba(201,138,154,.22)", parkText: "#0b0f14" }, // Muted pink
 
   // Park themes
   mk: { park: "#22d3ee", park2: "rgba(34,211,238,.26)", parkText: "#0b0f14" }, // Cyan
@@ -66,6 +70,8 @@ const PARK_THEME = {
   dl: { park: "#ef4444", park2: "rgba(239,68,68,.22)", parkText: "#0b0f14" },   // Red
   dca: { park: "#2563eb", park2: "rgba(37,99,235,.22)", parkText: "#0b0f14" }  // Blue
 };
+
+
 
 const appEl = document.getElementById("app");
 const parkSelect = document.getElementById("parkSelect");
