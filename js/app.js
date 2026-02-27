@@ -568,7 +568,7 @@ function resumeHistoryChallenge(historyEntry) {
   currentResort = resumed.resortId;
   setupParksDropdown();
   setPark(parkId);
-  renderParkPage(parkId);
+  renderParkPage({ readOnly: false });
 }
 
 function applyParkTheme(parkId) {
@@ -596,7 +596,7 @@ function renderStartPage(resortId = currentResort || "wdw") {
         <p class="p" style="margin-top:10px;">
           Modify tags and hashtags and add a link to your fundraising page below.
         </p>
-        <div class="btnRow" style="justify-content:flex-start; gap:10px;">
+        <div class="btnRow" style="justify-content:flex-start; gap:12px;">
           <button id="backToResortsBtn" class="btn btnPrimary" type="button">Back to resort selector</button>
         </div>
       </div>
