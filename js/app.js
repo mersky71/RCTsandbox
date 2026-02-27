@@ -601,7 +601,7 @@ function renderStartPage(resortId = currentResort || "wdw") {
         <p class="p" style="margin-top:10px;">
           Modify tags and hashtags and add a link to your fundraising page below.
         </p>
-        <div class="btnRow" style="justify-content:flex-start; gap:12px;">
+        <div class="btnRow" style="margin-top:12px; gap:10px;">
           <button id="backToResortsBtn" class="btn btnPrimary" type="button">Back to resort selector</button>
         </div>
       </div>
