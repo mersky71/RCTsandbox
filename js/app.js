@@ -567,9 +567,14 @@ function resumeHistoryChallenge(historyEntry) {
   setHeaderEnabled(true);
   currentResort = resumed.resortId;
   setupParksDropdown();
-  setPark(parkId);
+
+  currentPark = parkId;
+  parkSelect.value = parkId;
+  applyParkTheme(currentPark);
+
   renderParkPage({ readOnly: false });
-}
+  
+  }
 
 function applyParkTheme(parkId) {
   const t = PARK_THEME[parkId] || PARK_THEME.mk;
