@@ -625,13 +625,13 @@ function renderStartPage(resortId = currentResort || "wdw") {
           <div class="h1" style="font-size:16px;">Exclude rides (refurb / custom challenge)</div>
            <p class="p" style="margin-top:6px;"> Click to exclude rides that are not operating today, or to create a custom challenge. </p>
           <div class="btnRow" style="margin-top:10px;">
-            <button id="excludedRidesBtn" class="btn btnPrimary" type="button">Rides excluded: 0 of 0</button>
+            <button id="excludedRidesBtn" class="btn btnInverse" type="button">Rides excluded: 0 of 0</button>
           </div>
         </div>
 
         <div class="btnRow" style="margin-top:12px;">
           <button id="startBtn" class="btn btnPrimary" type="button">Start new challenge</button>
-          <button id="viewSavedBtn" class="btn btnPrimary" type="button">Previous challenges</button>
+          <button id="viewSavedBtn" class="btn btnInverse" type="button">Previous challenges</button>
         </div>
           </div>
         </div>
