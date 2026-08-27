@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ThemeParks.wiki Wait Time Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 24px;
+      background: #f5f7fa;
+      color: #1f2937;
+    }
+
+    .card {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    h1 {
+      margin-top: 0;
+      font-size: 24px;
+    }
+
+    .status {
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: #eef2ff;
+      margin-bottom: 16px;
+    }
+
+    .error {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 14px;
+    }
+
+    th, td {
+      border-bottom: 1px solid #e5e7eb;
+      text-align: left;
+      padding: 9px 8px;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f8fafc;
+    }
+
+    .wait {
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    button {
+      padding: 9px 14px;
+      border: 1px solid #64748b;
+      background: white;
+      border-radius: 7px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    button:hover {
+      background: #f1f5f9;
+    }
+
+    details {
+      margin-top: 20px;
+    }
+
+    pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 14px;
+      border-radius: 8px;
+      max-height: 500px;
+      overflow: auto;
+      font-size: 12px;
+    }
+
+    .attribution {
+      margin-top: 20px;
+      font-size: 12px;
+      color: #64748b;
+    }
+
+    .attribution a {
+      color: inherit;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Magic Kingdom live wait-time test</h1>
+    <p>This page does not use any of the Every Ride app code. It only tests whether this GitHub Pages site can retrieve live Magic Kingdom data directly from ThemeParks.wiki.</p>
+
+    <div id="status" class="status">Loading live data…</div>
+    <button id="refreshBtn" type="button">Refresh</button>
+
+    <table id="waitTable" hidden>
+      <thead>
+        <tr>
+          <th>Attraction</th>
+          <th>Status</th>
+          <th>Standby wait</th>
+          <th>Last updated</th>
+        </tr>
+      </thead>
+      <tbody id="waitRows"></tbody>
+    </table>
+
+    <details id="rawDetails" hidden>
+      <summary>Show raw API response</summary>
+      <pre id="rawJson"></pre>
+    </details>
+
+    <div class="attribution">
+      Powered by <a href="https://themeparks.wiki/" target="_blank" rel="noopener noreferrer">ThemeParks.wiki</a>
+    </div>
+  </div>
+
+  <script>
+    const MAGIC_KINGDOM_ID = '75ea578a-adc8-4116-a54d-dccb60765ef9';
+    const API_URL = `https://api.themeparks.wiki/v1/entity/${MAGIC_KINGDOM_ID}/live`;
+
+    const statusEl = document.getElementById('status');
+    const waitTable = document.getElementById('waitTable');
+    const waitRows = document.getElementById('waitRows');
+    const rawDetails = document.getElementById('rawDetails');
+    const rawJson = document.getElementById('rawJson');
+    const refreshBtn = document.getElementById('refreshBtn');
+
+    function getStandbyWait(item) {
+      const standby = item?.queue?.STANDBY;
+      if (!standby) return null;
+      return Number.isFinite(standby.waitTime) ? standby.waitTime : null;
+    }
+
+    function formatUpdated(value) {
+      if (!value) return '—';
+      const d = new Date(value);
+      return Number.isNaN(d.getTime()) ? value : d.toLocaleTimeString([], {
+        hour: 'numeric',
+        minute: '2-digit',
+        second: '2-digit'
+      });
+    }
+
+    async function loadWaits() {
+      statusEl.className = 'status';
+      statusEl.textContent = `Loading ${API_URL}`;
+      refreshBtn.disabled = true;
+      waitTable.hidden = true;
+      rawDetails.hidden = true;
+
+      try {
+        const response = await fetch(API_URL, { cache: 'no-store' });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status} ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        const liveData = Array.isArray(data.liveData) ? data.liveData : [];
+
+        rawJson.textContent = JSON.stringify(data, null, 2);
+        rawDetails.hidden = false;
+
+        const rows = liveData
+          .filter(item => item.entityType === 'ATTRACTION')
+          .map(item => ({
+            name: item.name || '(unnamed)',
+            status: item.status || 'UNKNOWN',
+            wait: getStandbyWait(item),
+            updated: item.lastUpdated || null
+          }))
+          .sort((a, b) => a.name.localeCompare(b.name));
+
+        waitRows.innerHTML = '';
+
+        for (const item of rows) {
+          const tr = document.createElement('tr');
+
+          const nameTd = document.createElement('td');
+          nameTd.textContent = item.name;
+
+          const statusTd = document.createElement('td');
+          statusTd.textContent = item.status;
+
+          const waitTd = document.createElement('td');
+          waitTd.className = 'wait';
+          waitTd.textContent = item.wait === null ? '—' : `${item.wait} min`;
+
+          const updatedTd = document.createElement('td');
+          updatedTd.textContent = formatUpdated(item.updated);
+
+          tr.append(nameTd, statusTd, waitTd, updatedTd);
+          waitRows.appendChild(tr);
+        }
+
+        waitTable.hidden = false;
+        statusEl.textContent = `Success. Received ${liveData.length} live entities; showing ${rows.length} attractions. Loaded at ${new Date().toLocaleTimeString()}.`;
+      } catch (error) {
+        console.error(error);
+        statusEl.className = 'status error';
+        statusEl.textContent = `ERROR: ${error.message}`;
+      } finally {
+        refreshBtn.disabled = false;
+      }
+    }
+
+    refreshBtn.addEventListener('click', loadWaits);
+    loadWaits();
+  </script>
+</body>
+</html>
