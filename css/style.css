@@ -653,37 +653,44 @@ body.inChallenge #appTitle {
   color: #ffffff !important;
 }
 
+/* Live posted wait times (ThemeParks.wiki) */
+.waitTimesMeta{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:6px;
+  margin: 2px 0 -2px;
+  color: var(--muted2);
+  font-size: 11px;
+  line-height: 1.2;
+}
+.waitTimesMeta a{
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.waitTimesDot{ opacity: .7; }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+.rideTitleRow{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:12px;
+  width:100%;
+}
+.rideTitleRow .rideName{
+  flex:1;
+  min-width:0;
+}
+.rideWait{
+  flex-shrink:0;
+  font-size:14px;
+  font-weight:750;
+  color: var(--park);
+  white-space:nowrap;
+}
+.rideWait.waitDown,
+.rideWait.waitClosed{
+  color:#6b7280;
+}
 
