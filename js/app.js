@@ -90,13 +90,38 @@ let active = null;
 let currentResort = null;
 let currentPark = "mk";
 
-// Live posted wait times (ThemeParks.wiki) — Magic Kingdom pilot
+// Live posted wait times (ThemeParks.wiki)
 const THEMEPARKS_WIKI_PARK_IDS = {
-  mk: "75ea578a-adc8-4116-a54d-dccb60765ef9"
+  mk: "75ea578a-adc8-4116-a54d-dccb60765ef9",
+  ep: "47f90d2c-e191-4239-a466-5892ef59a88b",
+  hs: "288747d1-8b4f-4a64-867e-ea7c9b27bad8",
+  ak: "1c84a229-8862-4648-9c71-378ddd2c7693",
+  dl: "7340550b-c14d-4def-80bb-acdb51d49a66",
+  dca: "832fcd51-ea19-4e77-85c7-75d5843b127c"
 };
 const WAIT_TIMES_REFRESH_MS = 5 * 60 * 1000;
 const waitTimesCache = new Map();
 const waitTimesRequests = new Map();
+
+// Remember the selected park across a browser refresh without making it a long-term preference.
+function selectedParkSessionKey(resortId) {
+  return `erw_selectedPark_${resortId || "wdw"}_v1`;
+}
+
+function rememberSelectedPark(parkId, resortId = currentResort) {
+  try {
+    sessionStorage.setItem(selectedParkSessionKey(resortId), parkId);
+  } catch {}
+}
+
+function loadRememberedPark(resortId = currentResort) {
+  try {
+    const parkId = sessionStorage.getItem(selectedParkSessionKey(resortId));
+    return getParksForResort(resortId || "wdw").some(p => p.id === parkId) ? parkId : null;
+  } catch {
+    return null;
+  }
+}
 
 
 // Draft excluded rides (chosen on Start page before a run begins)
@@ -166,7 +191,7 @@ async function init() {
     setupParksDropdown();
 
     setHeaderEnabled(true);
-    currentPark = getParksForResort(currentResort)[0]?.id || "mk";
+    currentPark = loadRememberedPark(currentResort) || getParksForResort(currentResort)[0]?.id || "mk";
     parkSelect.value = currentPark;
     applyParkTheme(currentPark);
     renderParkPage({ readOnly: false });
@@ -235,6 +260,7 @@ function setupParksDropdown() {
 
   parkSelect.onchange = () => {
     currentPark = parkSelect.value;
+    rememberSelectedPark(currentPark);
     applyParkTheme(currentPark);
     if (active) renderParkPage({ readOnly: false });
   };
@@ -624,6 +650,7 @@ function resumeHistoryChallenge(historyEntry) {
 
   currentPark = parkId;
   parkSelect.value = parkId;
+  rememberSelectedPark(currentPark, currentResort);
   applyParkTheme(currentPark);
 
   renderParkPage({ readOnly: false });
@@ -803,6 +830,7 @@ function renderStartPage(resortId = currentResort || "wdw") {
     setHeaderEnabled(true);
     currentPark = defaultPark;
     parkSelect.value = currentPark;
+    rememberSelectedPark(currentPark, currentResort);
     applyParkTheme(currentPark);
     renderParkPage({ readOnly: false });
   });
@@ -1246,7 +1274,8 @@ function formatWaitTimeLabel(entity) {
 
   const status = String(entity.status || "").toUpperCase();
   if (status === "DOWN") return "Down";
-  if (status === "CLOSED" || status === "REFURBISHMENT") return "Closed";
+  if (status === "REFURBISHMENT") return "Refurb";
+  if (status === "CLOSED") return "Closed";
   return "—";
 }
 
@@ -1374,18 +1403,18 @@ function renderParkPage({ readOnly = false } = {}) {
     ? `
       <div class="stack">
         ${parkCompleteButtonHtml}
-        ${renderWaitTimesMeta(currentPark)}
         <div class="rides" role="list">
           ${parkRides.map(r => renderRideRow(r, completedMap, readOnly)).join("")}
         </div>
+        ${renderWaitTimesMeta(currentPark)}
       </div>
     `
     : `
       <div class="stack">
-        ${renderWaitTimesMeta(currentPark)}
         <div class="rides" role="list">
           ${parkRides.map(r => renderRideRow(r, completedMap, readOnly)).join("")}
         </div>
+        ${renderWaitTimesMeta(currentPark)}
       </div>
     `;
 
