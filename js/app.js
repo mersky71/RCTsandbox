@@ -90,6 +90,15 @@ let active = null;
 let currentResort = null;
 let currentPark = "mk";
 
+// Live posted wait times (ThemeParks.wiki) — Magic Kingdom pilot
+const THEMEPARKS_WIKI_PARK_IDS = {
+  mk: "75ea578a-adc8-4116-a54d-dccb60765ef9"
+};
+const WAIT_TIMES_REFRESH_MS = 5 * 60 * 1000;
+const waitTimesCache = new Map();
+const waitTimesRequests = new Map();
+
+
 // Draft excluded rides (chosen on Start page before a run begins)
 // Stored per resort so DLR/WDW drafts don't collide (even if users rarely switch).
 function excludedDraftKey(resortId) {
@@ -116,6 +125,13 @@ function clearExcludedDraftIds(resortId = currentResort) {
 }
 
 init();
+
+// Refresh live waits periodically while the user remains on a supported park page.
+setInterval(() => {
+  if (active && THEMEPARKS_WIKI_PARK_IDS[currentPark]) {
+    loadWaitTimesForPark(currentPark, { force: true });
+  }
+}, WAIT_TIMES_REFRESH_MS);
 
 async function init() {
   setupMoreMenu();
@@ -1177,6 +1193,152 @@ function isParkCompleteNow(parkId) {
 }
 
 
+function normalizeWaitEntityName(value) {
+  return String(value || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[’‘]/g, "'")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function getStandbyWaitFromLiveEntity(entity) {
+  const wait = entity?.queue?.STANDBY?.waitTime;
+  return Number.isFinite(wait) ? wait : null;
+}
+
+function buildWaitTimesSnapshot(data) {
+  const liveData = Array.isArray(data?.liveData) ? data.liveData : [];
+  const byId = new Map();
+  const byName = new Map();
+  let newestUpdated = null;
+
+  for (const entity of liveData) {
+    if (entity?.entityType !== "ATTRACTION") continue;
+    if (entity.id) byId.set(entity.id, entity);
+    if (entity.name) byName.set(normalizeWaitEntityName(entity.name), entity);
+
+    if (entity.lastUpdated) {
+      const t = Date.parse(entity.lastUpdated);
+      if (Number.isFinite(t) && (!newestUpdated || t > newestUpdated)) newestUpdated = t;
+    }
+  }
+
+  return { byId, byName, newestUpdated, fetchedAt: Date.now() };
+}
+
+function getWaitEntityForRide(ride, snapshot) {
+  if (!snapshot) return null;
+  if (ride.themeparksWikiId && snapshot.byId.has(ride.themeparksWikiId)) {
+    return snapshot.byId.get(ride.themeparksWikiId);
+  }
+
+  const fallbackName = ride.themeparksWikiName || ride.name;
+  return snapshot.byName.get(normalizeWaitEntityName(fallbackName)) || null;
+}
+
+function formatWaitTimeLabel(entity) {
+  if (!entity) return "";
+
+  const wait = getStandbyWaitFromLiveEntity(entity);
+  if (wait !== null) return `${wait} min`;
+
+  const status = String(entity.status || "").toUpperCase();
+  if (status === "DOWN") return "Down";
+  if (status === "CLOSED" || status === "REFURBISHMENT") return "Closed";
+  return "—";
+}
+
+function formatWaitUpdateTime(timestamp) {
+  if (!timestamp) return "";
+  const d = new Date(timestamp);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+}
+
+function renderWaitTimesMeta(parkId) {
+  if (!THEMEPARKS_WIKI_PARK_IDS[parkId]) return "";
+
+  const snapshot = waitTimesCache.get(parkId);
+  const updated = snapshot ? formatWaitUpdateTime(snapshot.newestUpdated || snapshot.fetchedAt) : "";
+
+  return `
+    <div class="waitTimesMeta" id="waitTimesMeta">
+      <span>${updated ? `Waits updated ${escapeHtml(updated)}` : "Loading posted waits…"}</span>
+      <span class="waitTimesDot">•</span>
+      <a href="https://themeparks.wiki/" target="_blank" rel="noopener noreferrer">Powered by ThemeParks.wiki</a>
+    </div>
+  `;
+}
+
+function applyWaitTimesToParkPage(parkId) {
+  if (parkId !== currentPark) return;
+  const snapshot = waitTimesCache.get(parkId);
+  if (!snapshot) return;
+
+  const parkRides = rides.filter(r => r.park === parkId);
+  for (const ride of parkRides) {
+    const el = document.querySelector(`[data-wait-ride="${ride.id}"]`);
+    if (!el) continue;
+
+    const entity = getWaitEntityForRide(ride, snapshot);
+    const label = formatWaitTimeLabel(entity);
+    if (!label) {
+      el.textContent = "";
+      el.hidden = true;
+      continue;
+    }
+
+    el.textContent = label;
+    el.hidden = false;
+    const status = String(entity?.status || "").toUpperCase();
+    el.classList.toggle("waitDown", status === "DOWN");
+    el.classList.toggle("waitClosed", status === "CLOSED" || status === "REFURBISHMENT");
+  }
+
+  const meta = document.getElementById("waitTimesMeta");
+  if (meta) {
+    const updated = formatWaitUpdateTime(snapshot.newestUpdated || snapshot.fetchedAt);
+    meta.querySelector("span")?.replaceChildren(document.createTextNode(updated ? `Waits updated ${updated}` : "Posted waits loaded"));
+  }
+}
+
+async function loadWaitTimesForPark(parkId, { force = false } = {}) {
+  const entityId = THEMEPARKS_WIKI_PARK_IDS[parkId];
+  if (!entityId) return;
+
+  const cached = waitTimesCache.get(parkId);
+  if (!force && cached && Date.now() - cached.fetchedAt < WAIT_TIMES_REFRESH_MS) {
+    applyWaitTimesToParkPage(parkId);
+    return;
+  }
+
+  if (waitTimesRequests.has(parkId)) return waitTimesRequests.get(parkId);
+
+  const request = fetch(`https://api.themeparks.wiki/v1/entity/${entityId}/live`, { cache: "no-store" })
+    .then(response => {
+      if (!response.ok) throw new Error(`Wait-time API returned HTTP ${response.status}`);
+      return response.json();
+    })
+    .then(data => {
+      waitTimesCache.set(parkId, buildWaitTimesSnapshot(data));
+      applyWaitTimesToParkPage(parkId);
+    })
+    .catch(error => {
+      // Wait times are an optional enhancement. Never interfere with challenge logging.
+      console.warn("Unable to load posted wait times:", error);
+      const meta = document.getElementById("waitTimesMeta");
+      if (parkId === currentPark && meta) meta.hidden = true;
+    })
+    .finally(() => {
+      waitTimesRequests.delete(parkId);
+    });
+
+  waitTimesRequests.set(parkId, request);
+  return request;
+}
+
 function renderParkPage({ readOnly = false } = {}) {
   if (!active) return;
 
@@ -1212,6 +1374,7 @@ function renderParkPage({ readOnly = false } = {}) {
     ? `
       <div class="stack">
         ${parkCompleteButtonHtml}
+        ${renderWaitTimesMeta(currentPark)}
         <div class="rides" role="list">
           ${parkRides.map(r => renderRideRow(r, completedMap, readOnly)).join("")}
         </div>
@@ -1219,11 +1382,15 @@ function renderParkPage({ readOnly = false } = {}) {
     `
     : `
       <div class="stack">
+        ${renderWaitTimesMeta(currentPark)}
         <div class="rides" role="list">
           ${parkRides.map(r => renderRideRow(r, completedMap, readOnly)).join("")}
         </div>
       </div>
     `;
+
+  // Load current posted waits after the park UI is on screen. This does not block rendering.
+  loadWaitTimesForPark(currentPark);
 
   // Wire park completion tweet button (visible only when complete)
   if (!readOnly && parkComplete) {
@@ -1270,8 +1437,15 @@ function renderRideRow(r, completedMap, readOnly) {
   const hasLL = !!r.ll;
   const hasSR = !!r.sr;
 
-  // Ride name is always just text now (actions happen via buttons)
-  const nameHtml = `<p class="rideName">${escapeHtml(r.name)}</p>`;
+  // Ride name plus optional posted standby wait. Wait remains hidden until live data is available.
+  const initialWaitEntity = getWaitEntityForRide(r, waitTimesCache.get(currentPark));
+  const initialWaitLabel = formatWaitTimeLabel(initialWaitEntity);
+  const nameHtml = `
+    <div class="rideTitleRow">
+      <p class="rideName">${escapeHtml(r.name)}</p>
+      <span class="rideWait" data-wait-ride="${r.id}" ${initialWaitLabel ? "" : "hidden"}>${escapeHtml(initialWaitLabel)}</span>
+    </div>
+  `;
 
   // Row 2 for excluded rides
   const excludedMetaHtml = excluded
