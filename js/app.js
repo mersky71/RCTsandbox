@@ -99,6 +99,68 @@ const THEMEPARKS_WIKI_PARK_IDS = {
   dl: "7340550b-c14d-4def-80bb-acdb51d49a66",
   dca: "832fcd51-ea19-4e77-85c7-75d5843b127c"
 };
+
+const WAIT_ENTITY_ALIASES = {
+  hs_rnrc: [
+    "Rock 'n' Roller Coaster Starring The Muppets",
+    "Rock ’n’ Roller Coaster Starring The Muppets",
+    "Rock 'n' Roller Coaster"
+  ],
+  ak_ee: [
+    "Expedition Everest - Legend of the Forbidden Mountain",
+    "Expedition Everest – Legend of the Forbidden Mountain",
+    "Expedition Everest"
+  ],
+  ep_soarin: [
+    "Soarin' Across America",
+    "Soarin’ Across America",
+    "Soarin' Around the World",
+    "Soarin’ Around the World"
+  ],
+  dlr_chip_n_dales_go_coaster: [
+    "Chip 'n' Dale's GADGETcoaster",
+    "Chip ’n’ Dale’s GADGETcoaster",
+    "Chip 'n' Dale's Go Coaster",
+    "Gadget's Go Coaster"
+  ],
+  dlr_haunted_mansion: [
+    "Haunted Mansion Holiday",
+    "Haunted Mansion"
+  ],
+  dlr_the_incredicoaster: [
+    "Incredicoaster",
+    "The Incredicoaster"
+  ],
+  dlr_luigis_rollickin_roadsters: [
+    "Luigi's Rollickin' Roadsters",
+    "Luigi’s Rollickin’ Roadsters",
+    "Luigi's Rollickin Roadsters",
+    "Luigi's Honkin' Haul-O-Ween",
+    "Luigi’s Honkin’ Haul-O-Ween"
+  ],
+  dlr_maters_junkyard_jamboree: [
+    "Mater's Junkyard Jamboree",
+    "Mater’s Junkyard Jamboree",
+    "Mater's Graveyard JamBOOree",
+    "Mater’s Graveyard JamBOOree"
+  ],
+  dlr_pixar_pal_a_round: [
+    "Pixar Pal-A-Round",
+    "Pixar Pal-A-Round - Swinging",
+    "Pixar Pal-A-Round – Swinging",
+    "Pixar Pal-A-Round - Non-Swinging",
+    "Pixar Pal-A-Round – Non-Swinging"
+  ],
+  dlr_soarin_around_the_world: [
+    "Soarin' Across America",
+    "Soarin’ Across America",
+    "Soarin' Around the World",
+    "Soarin’ Around the World",
+    "Soarin' Over California",
+    "Soarin’ Over California"
+  ]
+};
+
 const WAIT_TIMES_REFRESH_MS = 5 * 60 * 1000;
 const waitTimesCache = new Map();
 const waitTimesRequests = new Map();
@@ -1262,8 +1324,35 @@ function getWaitEntityForRide(ride, snapshot) {
     return snapshot.byId.get(ride.themeparksWikiId);
   }
 
-  const fallbackName = ride.themeparksWikiName || ride.name;
-  return snapshot.byName.get(normalizeWaitEntityName(fallbackName)) || null;
+  const candidateNames = [
+    ride.themeparksWikiName,
+    ...(WAIT_ENTITY_ALIASES[ride.id] || []),
+    ride.name
+  ].filter(Boolean);
+
+  // Prefer exact normalized-name matches. This safely handles punctuation and
+  // apostrophe differences while still allowing current/seasonal Disney names.
+  for (const name of candidateNames) {
+    const exact = snapshot.byName.get(normalizeWaitEntityName(name));
+    if (exact) return exact;
+  }
+
+  // Some Disney entities append a qualifier to the base attraction name
+  // (for example seasonal overlays or gondola variants). Only accept a
+  // prefix match when it resolves to exactly one live attraction.
+  for (const name of candidateNames) {
+    const normalized = normalizeWaitEntityName(name);
+    if (!normalized) continue;
+    const matches = [];
+    for (const [liveName, entity] of snapshot.byName.entries()) {
+      if (liveName.startsWith(`${normalized} `) || normalized.startsWith(`${liveName} `)) {
+        matches.push(entity);
+      }
+    }
+    if (matches.length === 1) return matches[0];
+  }
+
+  return null;
 }
 
 function formatWaitTimeLabel(entity) {
