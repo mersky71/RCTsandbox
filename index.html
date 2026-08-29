@@ -18,9 +18,15 @@
     <div class="topbar__center">
       <!-- Counter first (left of park selector) -->
       <div id="counterPill" class="pill" aria-live="polite">Rides: —</div>
+      <div id="pointsPill" class="pill" aria-live="polite" style="display:none;">Points: 0</div>
 
       <label class="sr-only" for="parkSelect">Park</label>
       <select id="parkSelect" class="parkSelect" disabled></select>
+
+      <div class="pointsParkPickerWrap">
+        <button id="pointsParkPicker" class="pointsParkPicker" type="button" aria-haspopup="menu" aria-expanded="false" style="display:none;">MK ▾</button>
+        <div id="pointsParkMenu" class="pointsParkMenu" role="menu" aria-hidden="true"></div>
+      </div>
     </div>
 
     <div class="topbar__right">

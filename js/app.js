@@ -43,6 +43,13 @@ Help me support @GKTWVillage by donating at the link below`
   }
 };
 
+const POINTS_DEFAULT_TAGS = `#EveryRidePoints @RideEvery
+
+Help me support @GKTWVillage by donating at the link below`;
+const POINTS_PARK_BONUSES = { mk: 100, ep: 75, hs: 75, ak: 50 };
+const PARK_ABBREVIATIONS = { mk: "MK", ep: "EP", hs: "HS", ak: "AK" };
+const POINTS_OPTIONAL_RIDE_IDS = new Set(["mk_main_street_vehicles"]);
+
 function getResort(resortId) {
   return RESORTS[resortId] || RESORTS.wdw;
 }
@@ -76,6 +83,9 @@ const PARK_THEME = {
 const appEl = document.getElementById("app");
 const parkSelect = document.getElementById("parkSelect");
 const counterPill = document.getElementById("counterPill");
+const pointsPill = document.getElementById("pointsPill");
+const pointsParkPicker = document.getElementById("pointsParkPicker");
+const pointsParkMenu = document.getElementById("pointsParkMenu");
 const dialogHost = document.getElementById("dialogHost");
 
 const moreBtn = document.getElementById("moreBtn");
@@ -88,6 +98,7 @@ let rides = []; // active rides for current resort (active !== false)
 let ridesById = new Map(); // ALL rides by id (includes inactive + all resorts)
 let active = null;
 let currentResort = null;
+let currentChallengeMode = "standard";
 let currentPark = "mk";
 
 // Live posted wait times (ThemeParks.wiki)
@@ -166,19 +177,19 @@ const waitTimesCache = new Map();
 const waitTimesRequests = new Map();
 
 // Remember the selected park across a browser refresh without making it a long-term preference.
-function selectedParkSessionKey(resortId) {
-  return `erw_selectedPark_${resortId || "wdw"}_v1`;
+function selectedParkSessionKey(resortId, challengeMode = currentChallengeMode) {
+  return `erw_selectedPark_${resortId || "wdw"}_${challengeMode || "standard"}_v1`;
 }
 
 function rememberSelectedPark(parkId, resortId = currentResort) {
   try {
-    sessionStorage.setItem(selectedParkSessionKey(resortId), parkId);
+    sessionStorage.setItem(selectedParkSessionKey(resortId, currentChallengeMode), parkId);
   } catch {}
 }
 
 function loadRememberedPark(resortId = currentResort) {
   try {
-    const parkId = sessionStorage.getItem(selectedParkSessionKey(resortId));
+    const parkId = sessionStorage.getItem(selectedParkSessionKey(resortId, currentChallengeMode));
     return getParksForResort(resortId || "wdw").some(p => p.id === parkId) ? parkId : null;
   } catch {
     return null;
@@ -188,9 +199,9 @@ function loadRememberedPark(resortId = currentResort) {
 
 // Draft excluded rides (chosen on Start page before a run begins)
 // Stored per resort so DLR/WDW drafts don't collide (even if users rarely switch).
-function excludedDraftKey(resortId) {
+function excludedDraftKey(resortId, challengeMode = currentChallengeMode) {
   const rid = resortId || "wdw";
-  return `erw_excludedDraft_${rid}_v1`;
+  return `erw_excludedDraft_${rid}_${challengeMode || "standard"}_v1`;
 }
 
 function loadExcludedDraftIds(resortId = currentResort) {
@@ -243,6 +254,7 @@ async function init() {
 
   if (active) {
     currentResort = active.resortId || "wdw";
+    currentChallengeMode = active.challengeMode || "standard";
     // Back-compat: persist resortId on older stored challenges
     if (!active.resortId) {
       active.resortId = currentResort;
@@ -251,10 +263,12 @@ async function init() {
 
     setRidesForResort(currentResort);
     setupParksDropdown();
+    setupPointsParkPicker();
 
     setHeaderEnabled(true);
     currentPark = loadRememberedPark(currentResort) || getParksForResort(currentResort)[0]?.id || "mk";
     parkSelect.value = currentPark;
+    updatePointsParkPickerLabel();
     applyParkTheme(currentPark);
     renderParkPage({ readOnly: false });
   } else {
@@ -266,7 +280,11 @@ async function init() {
 
 function setRidesForResort(resortId) {
   currentResort = resortId || "wdw";
-  rides = allRides.filter(r => (r.resort || "wdw") === currentResort && r.active !== false);
+  rides = allRides.filter(r => {
+    if ((r.resort || "wdw") !== currentResort || r.active === false) return false;
+    if (currentResort === "wdw" && currentChallengeMode !== "points" && r.id === "mk_main_street_vehicles") return false;
+    return true;
+  });
 }
 
 function renderResortSelectPage() {
@@ -282,11 +300,14 @@ function renderResortSelectPage() {
       </div>
 
       <div class="card">
-        <div class="h1">Choose your resort</div>
-        <p class="p">Select the resort for your challenge today.</p>
+        <div class="h1">Choose your resort and challenge</div>
+        <p class="p">Select the resort and challenge for today.</p>
         <div class="btnRow" style="margin-top:12px; gap:10px; flex-wrap:wrap;">
           <button id="chooseWDW" class="btn btnPrimary" type="button">Walt Disney World</button>
           <button id="chooseDLR" class="btn btnPrimary" type="button">Disneyland Resort</button>
+        </div>
+        <div class="btnRow" style="margin-top:10px;">
+          <button id="chooseWDWPoints" class="btn btnPrimary" type="button">WDW Points Challenge</button>
         </div>
       </div>
 
@@ -301,11 +322,15 @@ function renderResortSelectPage() {
   `;
 
   document.getElementById("chooseWDW")?.addEventListener("click", () => {
-    navigateToResort("wdw");
+    navigateToResort("wdw", "standard");
   });
 
   document.getElementById("chooseDLR")?.addEventListener("click", () => {
-    navigateToResort("dlr");
+    navigateToResort("dlr", "standard");
+  });
+
+  document.getElementById("chooseWDWPoints")?.addEventListener("click", () => {
+    navigateToResort("wdw", "points");
   });
 }
 
@@ -326,6 +351,48 @@ function setupParksDropdown() {
     applyParkTheme(currentPark);
     if (active) renderParkPage({ readOnly: false });
   };
+}
+
+function setupPointsParkPicker() {
+  if (!pointsParkPicker || !pointsParkMenu) return;
+
+  pointsParkMenu.innerHTML = getParksForResort("wdw").map(p =>
+    `<button type="button" class="pointsParkMenu__item" data-points-park="${p.id}">${escapeHtml(p.name)}</button>`
+  ).join("");
+
+  pointsParkPicker.onclick = (e) => {
+    e.stopPropagation();
+    moreBtn.setAttribute("aria-expanded", "false");
+    moreMenu.setAttribute("aria-hidden", "true");
+    const open = pointsParkPicker.getAttribute("aria-expanded") === "true";
+    pointsParkPicker.setAttribute("aria-expanded", String(!open));
+    pointsParkMenu.setAttribute("aria-hidden", String(open));
+  };
+
+  pointsParkMenu.querySelectorAll("[data-points-park]").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const parkId = btn.getAttribute("data-points-park");
+      if (!parkId) return;
+      currentPark = parkId;
+      parkSelect.value = parkId;
+      rememberSelectedPark(currentPark);
+      updatePointsParkPickerLabel();
+      pointsParkPicker.setAttribute("aria-expanded", "false");
+      pointsParkMenu.setAttribute("aria-hidden", "true");
+      applyParkTheme(currentPark);
+      if (active) renderParkPage({ readOnly: false });
+    });
+  });
+}
+
+function updatePointsParkPickerLabel() {
+  if (!pointsParkPicker) return;
+  pointsParkPicker.textContent = `${PARK_ABBREVIATIONS[currentPark] || currentPark.toUpperCase()} ▾`;
+}
+
+function isPointsMode(ch = active) {
+  return (ch?.challengeMode || currentChallengeMode) === "points";
 }
 
 function getExcludedSetForActive() {
@@ -355,6 +422,8 @@ function setupAutoScrollToTopOnReturnIfParkComplete() {
 function setupMoreMenu() {
   moreBtn.addEventListener("click", (e) => {
     e.stopPropagation();
+    pointsParkPicker?.setAttribute("aria-expanded", "false");
+    pointsParkMenu?.setAttribute("aria-hidden", "true");
     const expanded = moreBtn.getAttribute("aria-expanded") === "true";
     moreBtn.setAttribute("aria-expanded", String(!expanded));
     moreMenu.setAttribute("aria-hidden", String(expanded));
@@ -363,6 +432,8 @@ function setupMoreMenu() {
   document.addEventListener("click", () => {
     moreBtn.setAttribute("aria-expanded", "false");
     moreMenu.setAttribute("aria-hidden", "true");
+    pointsParkPicker?.setAttribute("aria-expanded", "false");
+    pointsParkMenu?.setAttribute("aria-hidden", "true");
   });
 
   // Ensure "Excluded rides" exists in More menu (insert in correct order)
@@ -595,14 +666,28 @@ function setHeaderEnabled(enabled) {
   // Hide app title on park pages
   if (appTitle) appTitle.style.display = enabled ? "none" : "block";
 
-  // Show/hide controls
-  parkSelect.style.display = enabled ? "inline-flex" : "none";
+  const pointsMode = enabled && isPointsMode();
+
+  // Show/hide controls. Points mode uses a compact custom park picker.
+  parkSelect.style.display = enabled && !pointsMode ? "inline-flex" : "none";
+  if (pointsParkPicker) pointsParkPicker.style.display = pointsMode ? "inline-flex" : "none";
+  if (pointsPill) pointsPill.style.display = pointsMode ? "inline-flex" : "none";
   moreBtn.style.display = enabled ? "inline-flex" : "none";
   counterPill.style.display = enabled ? "inline-flex" : "none";
 
+  // Standard mode keeps the mature Rides -> Park order. Points mode uses
+  // compact Park -> Points -> Rides to keep all three status items on one line.
+  if (pointsParkPicker?.parentElement) pointsParkPicker.parentElement.style.order = pointsMode ? "1" : "3";
+  if (pointsPill) pointsPill.style.order = pointsMode ? "2" : "2";
+  counterPill.style.order = pointsMode ? "3" : "1";
+  parkSelect.style.order = "2";
+
   // Enable/disable
   parkSelect.disabled = !enabled;
+  if (pointsParkPicker) pointsParkPicker.disabled = !enabled;
   moreBtn.disabled = !enabled;
+
+  if (pointsMode) updatePointsParkPickerLabel();
 }
 
 /* ==========================
@@ -616,12 +701,14 @@ function navigateToHome(replace = false) {
     history.pushState({ page: "home" }, "");
   }
   currentResort = null;
+  currentChallengeMode = "standard";
   active = null;
   renderResortSelectPage();
 }
 
-function navigateToResort(resortId, replace = false) {
-  const st = { page: "resort", resortId };
+function navigateToResort(resortId, challengeMode = "standard", replace = false) {
+  currentChallengeMode = challengeMode || "standard";
+  const st = { page: "resort", resortId, challengeMode: currentChallengeMode };
   if (replace) {
     history.replaceState(st, "");
   } else {
@@ -629,7 +716,8 @@ function navigateToResort(resortId, replace = false) {
   }
   setRidesForResort(resortId);
   setupParksDropdown();
-  renderStartPage(resortId);
+  setupPointsParkPicker();
+  renderStartPage(resortId, currentChallengeMode);
 }
 
 // Handle browser back/forward
@@ -640,7 +728,7 @@ window.addEventListener("popstate", (e) => {
     return;
   }
   if (st.page === "resort") {
-    navigateToResort(st.resortId || "wdw", true);
+    navigateToResort(st.resortId || "wdw", st.challengeMode || "standard", true);
     return;
   }
 });
@@ -649,8 +737,11 @@ window.addEventListener("popstate", (e) => {
    Resume helpers
    ========================== */
 
-function getMostRecentHistoryEntryForResort(resortId) {
-  const hist = loadChallengeHistory().filter(x => (x.resortId || "wdw") === resortId);
+function getMostRecentHistoryEntryForResort(resortId, challengeMode = currentChallengeMode) {
+  const hist = loadChallengeHistory().filter(x =>
+    (x.resortId || "wdw") === resortId &&
+    (x.challengeMode || "standard") === (challengeMode || "standard")
+  );
   if (!hist.length) return null;
   return hist.reduce((best, cur) => {
     const tb = Date.parse(best.endedAt || best.startedAt || "") || 0;
@@ -688,6 +779,7 @@ function resumeHistoryChallenge(historyEntry) {
 
   resumed.dayKey = computeDayKeyNow();
   resumed.resortId = resumed.resortId || currentResort || "wdw";
+  resumed.challengeMode = resumed.challengeMode || currentChallengeMode || "standard";
 
   // Ensure settings exist
   resumed.settings = resumed.settings || {};
@@ -708,10 +800,14 @@ function resumeHistoryChallenge(historyEntry) {
 
   setHeaderEnabled(true);
   currentResort = resumed.resortId;
+  currentChallengeMode = resumed.challengeMode || "standard";
+  setRidesForResort(currentResort);
   setupParksDropdown();
+  setupPointsParkPicker();
 
   currentPark = parkId;
   parkSelect.value = parkId;
+  updatePointsParkPickerLabel();
   rememberSelectedPark(currentPark, currentResort);
   applyParkTheme(currentPark);
 
@@ -726,18 +822,19 @@ function applyParkTheme(parkId) {
   document.documentElement.style.setProperty("--parkText", t.parkText);
 }
 
-function renderStartPage(resortId = currentResort || "wdw") {
+function renderStartPage(resortId = currentResort || "wdw", challengeMode = currentChallengeMode || "standard") {
+  currentChallengeMode = challengeMode || "standard";
   setRidesForResort(resortId);
   applyParkTheme(resortId === "dlr" ? "dlrHome" : "wdwHome");
   setHeaderEnabled(false);
   const resort = getResort(resortId);
-  const defaultTags = resort.startDefaults?.tagsText || "";
+  const defaultTags = currentChallengeMode === "points" ? POINTS_DEFAULT_TAGS : (resort.startDefaults?.tagsText || "");
   const defaultPark = getParksForResort(resortId)[0]?.id || "mk";
 
   appEl.innerHTML = `
     <div class="stack startPage">
       <div class="card">
-        <div class="h1">Every Ride ${resortId.toUpperCase()} Challenge</div>
+        <div class="h1">${currentChallengeMode === "points" ? "Every Ride WDW Points Challenge" : `Every Ride ${resortId.toUpperCase()} Challenge`}</div>
         <p class="p">
           This app may help you track your ${resortId.toUpperCase()} challenge run and generate draft tweets for you.
         </p>
@@ -807,7 +904,7 @@ function renderStartPage(resortId = currentResort || "wdw") {
   // Resume most recent challenge (within last 36 hours) for this resort
   const resumeHost = document.getElementById("resumeCardHost");
   if (resumeHost) {
-    const mostRecent = getMostRecentHistoryEntryForResort(resortId);
+    const mostRecent = getMostRecentHistoryEntryForResort(resortId, currentChallengeMode);
     const isRecent = mostRecent && isWithinHours(mostRecent, 36);
     if (isRecent) {
       const when = Date.parse(mostRecent.endedAt || mostRecent.startedAt || "") || 0;
@@ -867,6 +964,7 @@ function renderStartPage(resortId = currentResort || "wdw") {
     active = startNewChallenge({ tagsText, fundraisingLink });
 
     active.resortId = currentResort || resortId || "wdw";
+    active.challengeMode = currentChallengeMode || "standard";
 
     const tweetMode = document.querySelector('input[name="tweetMode"]:checked')?.value === "twofer"
       ? "twofer"
@@ -885,6 +983,7 @@ function renderStartPage(resortId = currentResort || "wdw") {
     clearExcludedDraftIds();
 
     // Make sure tweet builder can read these no matter where storage keeps them.
+    active.parkBonuses = active.parkBonuses || {};
     active.tagsText = tagsText;
     active.fundraisingLink = fundraisingLink;
     saveActiveChallenge(active);
@@ -892,6 +991,8 @@ function renderStartPage(resortId = currentResort || "wdw") {
     setHeaderEnabled(true);
     currentPark = defaultPark;
     parkSelect.value = currentPark;
+    setupPointsParkPicker();
+    updatePointsParkPickerLabel();
     rememberSelectedPark(currentPark, currentResort);
     applyParkTheme(currentPark);
     renderParkPage({ readOnly: false });
@@ -1024,6 +1125,7 @@ function renderParkFilters() {
     active.settings = active.settings || {};
     active.settings.excludedRideIds = idsArr;
 
+    reconcileClaimedParkBonuses();
     saveActiveChallenge(active);
 
     // Apply immediately to park pages
@@ -1131,7 +1233,10 @@ function renderParkFilters() {
 
 function openSavedChallengesDialog() {
   const rid = currentResort || "wdw";
-  const hist = loadChallengeHistory().filter(x => (x.resortId || "wdw") === rid);
+  const hist = loadChallengeHistory().filter(x =>
+    (x.resortId || "wdw") === rid &&
+    (x.challengeMode || "standard") === (currentChallengeMode || "standard")
+  );
 
   const sorted = [...hist].sort((a, b) => {
     const ta = Date.parse(a.endedAt || a.startedAt || "") || 0;
@@ -1201,7 +1306,11 @@ function openSavedChallengesDialog() {
   dialogHost.querySelectorAll("[data-hview]").forEach(btn => {
     btn.addEventListener("click", async () => {
       const id = btn.getAttribute("data-hview");
-      const ch = loadChallengeHistory().find(x => x.id === id && (x.resortId || "wdw") === (currentResort || "wdw"));
+      const ch = loadChallengeHistory().find(x =>
+        x.id === id &&
+        (x.resortId || "wdw") === (currentResort || "wdw") &&
+        (x.challengeMode || "standard") === (currentChallengeMode || "standard")
+      );
       if (!ch) return;
 
       if (!ch.events || ch.events.length === 0) {
@@ -1272,10 +1381,97 @@ function buildParkCompletionTweetMainText(parkName) {
   return `✅ ${parkName} complete!`;
 }
 
+function getPointsRequiredRidesForPark(parkId) {
+  return rides.filter(r => r.park === parkId && !POINTS_OPTIONAL_RIDE_IDS.has(r.id));
+}
+
+function getIncompleteRequiredRidesForPark(parkId) {
+  if (!active) return [];
+  const completedMap = buildCompletedMap(active.events || []);
+  const excludedSet = getExcludedSetForActive();
+  return getPointsRequiredRidesForPark(parkId).filter(r => !completedMap.has(r.id) && !excludedSet.has(r.id));
+}
+
+function isPointsParkEligible(parkId) {
+  return getIncompleteRequiredRidesForPark(parkId).length === 0;
+}
+
+function getRidePoints(rideOrEvent) {
+  if (!rideOrEvent) return 0;
+  if (Number.isFinite(Number(rideOrEvent.points))) return Number(rideOrEvent.points);
+  const ride = ridesById.get(rideOrEvent.rideId || rideOrEvent.id);
+  return Number.isFinite(Number(ride?.points)) ? Number(ride.points) : 0;
+}
+
+function getCurrentPointsTotal(ch = active) {
+  if (!ch || (ch.challengeMode || currentChallengeMode) !== "points") return 0;
+  const rideTotal = (ch.events || []).reduce((sum, e) => sum + getRidePoints(e), 0);
+  const bonusTotal = Object.values(ch.parkBonuses || {}).reduce((sum, b) => sum + (b?.claimed ? Number(b.points || 0) : 0), 0);
+  return rideTotal + bonusTotal;
+}
+
+function reconcileClaimedParkBonuses() {
+  if (!active || !isPointsMode()) return false;
+  active.parkBonuses = active.parkBonuses || {};
+  let changed = false;
+  for (const parkId of Object.keys(POINTS_PARK_BONUSES)) {
+    const bonus = active.parkBonuses[parkId];
+    if (bonus?.claimed && !isPointsParkEligible(parkId)) {
+      delete active.parkBonuses[parkId];
+      changed = true;
+    }
+  }
+  return changed;
+}
+
+function getPointsParkBonusState(parkId) {
+  return active?.parkBonuses?.[parkId] || null;
+}
+
+function openPointsParkIncompleteDialog(parkId) {
+  const missing = getIncompleteRequiredRidesForPark(parkId);
+  let body = "";
+  if (missing.length === 1) {
+    body = `${missing[0].name} is not marked complete. Complete all rides in the app to claim the park bonus. If the attraction is closed for refurbishment, go to More → Excluded rides and mark it excluded.`;
+  } else if (missing.length === 2) {
+    body = `${missing[0].name} and ${missing[1].name} are not marked complete. Complete all rides in the app to claim the park bonus. If either attraction is closed for refurbishment, go to More → Excluded rides and mark it excluded.`;
+  } else {
+    body = `${missing.length} rides are not marked complete. Complete all rides in the app to claim the park bonus. If any are closed for refurbishment, go to More → Excluded rides and mark them excluded.`;
+  }
+  openDialog({
+    title: "Park not yet complete",
+    body,
+    content: "",
+    buttons: [{ text: "OK", className: "btn btnPrimary", action: () => closeDialog() }]
+  });
+}
+
+function claimPointsParkBonus(parkId) {
+  if (!active || !isPointsMode()) return;
+  if (!isPointsParkEligible(parkId)) {
+    openPointsParkIncompleteDialog(parkId);
+    return;
+  }
+  active.parkBonuses = active.parkBonuses || {};
+  if (active.parkBonuses[parkId]?.claimed) return;
+  const bonusPoints = POINTS_PARK_BONUSES[parkId] || 0;
+  active.parkBonuses[parkId] = {
+    claimed: true,
+    points: bonusPoints,
+    timestamp: new Date().toISOString()
+  };
+  saveActiveChallenge(active);
+  const parkName = getParkDisplayName(parkId);
+  const mainText = `✅ ${parkName} completion bonus (+${bonusPoints} pts)
+Total points: ${getCurrentPointsTotal()}`;
+  openTweetDraft(mainText);
+  renderParkPage({ readOnly: false });
+}
+
 function isParkCompleteNow(parkId) {
   if (!active) return false;
 
-  const parkRides = rides.filter(r => r.park === parkId);
+  const parkRides = isPointsMode() ? getPointsRequiredRidesForPark(parkId) : rides.filter(r => r.park === parkId);
   const completedMap = buildCompletedMap(active.events || []);
   const excludedSet = getExcludedSetForActive();
 
@@ -1460,61 +1656,59 @@ async function loadWaitTimesForPark(parkId, { force = false } = {}) {
 function renderParkPage({ readOnly = false } = {}) {
   if (!active) return;
 
+  if (reconcileClaimedParkBonuses()) saveActiveChallenge(active);
+
   const parkRides = rides
     .filter(r => r.park === currentPark)
     .sort((a, b) => (a.sortKey || "").localeCompare(b.sortKey || "", "en", { sensitivity: "base" }));
 
   const completedMap = buildCompletedMap(active.events);
 
-  // Header pill text
+  // Header pills
   counterPill.textContent = `Rides: ${active.events.length}`;
+  if (pointsPill) pointsPill.textContent = `Points: ${getCurrentPointsTotal()}`;
+  updatePointsParkPickerLabel();
 
   const excludedSet = getExcludedSetForActive();
-
-  // Park complete if every ride is either completed OR excluded
-  const parkComplete = parkRides.every(r => completedMap.has(r.id) || excludedSet.has(r.id));
   const parkName = getParkDisplayName(currentPark);
 
-  const parkCompleteButtonHtml = parkComplete
-    ? `
+  let parkActionHtml = "";
+  if (isPointsMode()) {
+    const claimed = getPointsParkBonusState(currentPark)?.claimed === true;
+    const bonusPoints = POINTS_PARK_BONUSES[currentPark] || 0;
+    parkActionHtml = `
+      <div style="display:flex; justify-content:center; margin-top:16px;">
+        ${claimed
+          ? `<div class="bonusClaimedStatus">Park bonus claimed: +${bonusPoints} pts</div>`
+          : `<button id="claimParkBonusBtn" class="btn btnPrimary" type="button">Claim park bonus</button>`}
+      </div>`;
+  } else {
+    const parkComplete = parkRides.every(r => completedMap.has(r.id) || excludedSet.has(r.id));
+    if (parkComplete) {
+      parkActionHtml = `
         <div style="display:flex; justify-content:center; margin-top:16px;">
-          <button
-            id="parkCompleteTweetBtn"
-            class="btn btnPrimary"
-            type="button"
-          >${escapeHtml(`${parkName} complete! Click to tweet`)}</button>   
-        </div>
-      `
-    : "";
+          <button id="parkCompleteTweetBtn" class="btn btnPrimary" type="button">${escapeHtml(`${parkName} complete! Click to tweet`)}</button>
+        </div>`;
+    }
+  }
 
-  // IMPORTANT: no UI change until complete (no placeholder spacing)
-  appEl.innerHTML = parkComplete
-    ? `
-      <div class="stack">
-        ${parkCompleteButtonHtml}
-        <div class="rides" role="list">
-          ${parkRides.map(r => renderRideRow(r, completedMap, readOnly)).join("")}
-        </div>
-        ${renderWaitTimesMeta(currentPark)}
+  appEl.innerHTML = `
+    <div class="stack">
+      ${parkActionHtml}
+      <div class="rides" role="list">
+        ${parkRides.map(r => renderRideRow(r, completedMap, readOnly)).join("")}
       </div>
-    `
-    : `
-      <div class="stack">
-        <div class="rides" role="list">
-          ${parkRides.map(r => renderRideRow(r, completedMap, readOnly)).join("")}
-        </div>
-        ${renderWaitTimesMeta(currentPark)}
-      </div>
-    `;
+      ${renderWaitTimesMeta(currentPark)}
+    </div>`;
 
-  // Load current posted waits after the park UI is on screen. This does not block rendering.
   loadWaitTimesForPark(currentPark);
 
-  // Wire park completion tweet button (visible only when complete)
-  if (!readOnly && parkComplete) {
+  if (!readOnly && isPointsMode()) {
+    document.getElementById("claimParkBonusBtn")?.addEventListener("click", () => claimPointsParkBonus(currentPark));
+  } else if (!readOnly) {
     document.getElementById("parkCompleteTweetBtn")?.addEventListener("click", () => {
       const mainText = buildParkCompletionTweetMainText(parkName);
-      openTweetDraft(mainText); // reuses the exact same suffix/formatting logic
+      openTweetDraft(mainText);
     });
   }
 
@@ -1525,7 +1719,6 @@ function renderParkPage({ readOnly = false } = {}) {
     const isExcluded = excludedSet.has(r.id);
 
     if (!readOnly) {
-      // Excluded rides have no buttons and no undo/edit
       if (!isExcluded && !isCompleted) {
         document.querySelector(`[data-line="${r.id}:standby"]`)?.addEventListener("click", () => logRide(r, "standby"));
         if (r.ll) document.querySelector(`[data-line="${r.id}:ll"]`)?.addEventListener("click", () => logRide(r, "ll"));
@@ -1560,7 +1753,7 @@ function renderRideRow(r, completedMap, readOnly) {
   const initialWaitLabel = formatWaitTimeLabel(initialWaitEntity);
   const nameHtml = `
     <div class="rideTitleRow">
-      <p class="rideName">${escapeHtml(r.name)}</p>
+      <p class="rideName">${escapeHtml(r.name)}${isPointsMode() ? ` <span class="ridePoints">(${getRidePoints(r)} pts)</span>` : ""}</p>
       <span class="rideWait" data-wait-ride="${r.id}" ${initialWaitLabel ? "" : "hidden"}>${escapeHtml(initialWaitLabel)}</span>
     </div>
   `;
@@ -1671,9 +1864,11 @@ function getLightningLaneNumberForEvent(event) {
 function buildRideTweetForEvent(event) {
   const idx = (active?.events || []).findIndex(e => e.id === event.id);
   const ride = ridesById.get(event.rideId);
+  const rideName = event.rideName || ride?.name || "Ride";
+  const pointsSuffix = isPointsMode() ? ` (${getRidePoints(event)} pts)` : "";
   return buildRideTweet({
     rideNumber: idx >= 0 ? idx + 1 : null,
-    rideName: event.rideName || ride?.name || "Ride",
+    rideName: `${rideName}${pointsSuffix}`,
     mode: event.mode,
     timeLabel: event.timeISO ? formatTime(new Date(event.timeISO)) : "",
     llNumber: getLightningLaneNumberForEvent(event)
@@ -1681,7 +1876,10 @@ function buildRideTweetForEvent(event) {
 }
 
 function buildRideBatchTweet(events) {
-  return (events || []).map(buildRideTweetForEvent).filter(Boolean).join("\n");
+  const rideLines = (events || []).map(buildRideTweetForEvent).filter(Boolean).join("\n");
+  if (!rideLines || !isPointsMode()) return rideLines;
+  return `${rideLines}
+Total points: ${getCurrentPointsTotal()}`;
 }
 
 function renderCompletedText(mode, timeISO) {
@@ -1712,7 +1910,8 @@ function logRide(ride, mode) {
     park: ride.park,
     mode, // standby | ll | sr
     timeISO: now.toISOString(),
-    rideName: ride.name
+    rideName: ride.name,
+    ...(isPointsMode() ? { points: getRidePoints(ride) } : {})
   };
 
   active.events.push(event);
@@ -2074,6 +2273,7 @@ function openUndoEditDialog(ride, eventInfo) {
         if (isMostRecent) {
           closeDialog(); // close Undo/Edit popup
           active.events = active.events.filter(e => e.id !== eventInfo.event.id);
+          reconcileClaimedParkBonuses();
           saveActiveChallenge(active);
           renderParkPage({ readOnly: false });
           return;
@@ -2088,6 +2288,7 @@ function openUndoEditDialog(ride, eventInfo) {
             // Confirm dialog closes itself; also close the Undo/Edit popup behind it
             closeDialog();
             active.events = active.events.filter(e => e.id !== eventInfo.event.id);
+            reconcileClaimedParkBonuses();
             saveActiveChallenge(active);
             renderParkPage({ readOnly: false });
           }

@@ -9,7 +9,8 @@
     "sr": false,
     "active": true,
     "resort": "wdw",
-    "themeparksWikiId": "d9d12438-d999-4482-894b-8955fdb20ccf"
+    "themeparksWikiId": "d9d12438-d999-4482-894b-8955fdb20ccf",
+    "points": 20
   },
   {
     "id": "mk_barnstormer",
@@ -21,7 +22,8 @@
     "sr": false,
     "active": true,
     "resort": "wdw",
-    "themeparksWikiId": "924a3b2c-6b4b-49e5-99d3-e9dc3f2e8a48"
+    "themeparksWikiId": "924a3b2c-6b4b-49e5-99d3-e9dc3f2e8a48",
+    "points": 5
   },
   {
     "id": "mk_btmr",
@@ -33,7 +35,8 @@
     "sr": false,
     "active": true,
     "resort": "wdw",
-    "themeparksWikiId": "de3309ca-97d5-4211-bffe-739fed47e92f"
+    "themeparksWikiId": "de3309ca-97d5-4211-bffe-739fed47e92f",
+    "points": 15
   },
   {
     "id": "mk_buzz",
@@ -46,7 +49,8 @@
     "sr": false,
     "active": true,
     "resort": "wdw",
-    "themeparksWikiId": "72c7343a-f7fb-4f66-95df-c91016de7338"
+    "themeparksWikiId": "72c7343a-f7fb-4f66-95df-c91016de7338",
+    "points": 10
   },
   {
     "id": "mk_dumbo",
@@ -58,7 +62,8 @@
     "sr": false,
     "active": true,
     "resort": "wdw",
-    "themeparksWikiId": "890fa430-89c0-4a3f-96c9-11597888005e"
+    "themeparksWikiId": "890fa430-89c0-4a3f-96c9-11597888005e",
+    "points": 5
   },
   {
     "id": "mk_haunted_mansion",
@@ -70,7 +75,8 @@
     "sr": false,
     "active": true,
     "resort": "wdw",
-    "themeparksWikiId": "2551a77d-023f-4ab1-9a19-8afec0190f39"
+    "themeparksWikiId": "2551a77d-023f-4ab1-9a19-8afec0190f39",
+    "points": 15
   },
   {
     "id": "mk_iasw",
@@ -82,7 +88,8 @@
     "sr": false,
     "active": true,
     "resort": "wdw",
-    "themeparksWikiId": "f5aad2d4-a419-4384-bd9a-42f86385c750"
+    "themeparksWikiId": "f5aad2d4-a419-4384-bd9a-42f86385c750",
+    "points": 15
   },
   {
     "id": "mk_jungle_cruise",
@@ -94,7 +101,8 @@
     "sr": false,
     "active": true,
     "resort": "wdw",
-    "themeparksWikiId": "796b0a25-c51e-456e-9bb8-50a324e301b3"
+    "themeparksWikiId": "796b0a25-c51e-456e-9bb8-50a324e301b3",
+    "points": 20
   },
   {
     "id": "mk_mad_tea_party",
@@ -106,7 +114,8 @@
     "sr": false,
     "active": true,
     "resort": "wdw",
-    "themeparksWikiId": "0aae716c-af13-4439-b638-d75fb1649df3"
+    "themeparksWikiId": "0aae716c-af13-4439-b638-d75fb1649df3",
+    "points": 5
   },
   {
     "id": "mk_magic_carpets",
@@ -119,7 +128,8 @@
     "sr": false,
     "active": true,
     "resort": "wdw",
-    "themeparksWikiId": "96455de6-f4f1-403c-9391-bf8396979149"
+    "themeparksWikiId": "96455de6-f4f1-403c-9391-bf8396979149",
+    "points": 5
   },
   {
     "id": "mk_main_street_vehicles",
@@ -131,7 +141,8 @@
     "sr": false,
     "active": true,
     "resort": "wdw",
-    "themeparksWikiName": "Main Street Vehicles"
+    "themeparksWikiName": "Main Street Vehicles",
+    "points": 25
   },
   {
     "id": "mk_pooh",
@@ -144,7 +155,8 @@
     "sr": false,
     "active": true,
     "resort": "wdw",
-    "themeparksWikiId": "0d94ad60-72f0-4551-83a6-ebaecdd89737"
+    "themeparksWikiId": "0d94ad60-72f0-4551-83a6-ebaecdd89737",
+    "points": 10
   },
   {
     "id": "mk_peter_pan",
@@ -156,7 +168,8 @@
     "sr": false,
     "active": true,
     "resort": "wdw",
-    "themeparksWikiId": "86a41273-5f15-4b54-93b6-829f140e5161"
+    "themeparksWikiId": "86a41273-5f15-4b54-93b6-829f140e5161",
+    "points": 20
   },
   {
     "id": "mk_pirates",
@@ -168,7 +181,8 @@
     "sr": false,
     "active": true,
     "resort": "wdw",
-    "themeparksWikiId": "352feb94-e52e-45eb-9c92-e4b44c6b1a9d"
+    "themeparksWikiId": "352feb94-e52e-45eb-9c92-e4b44c6b1a9d",
+    "points": 15
   },
   {
     "id": "mk_carrousel",
@@ -180,7 +194,8 @@
     "sr": false,
     "active": true,
     "resort": "wdw",
-    "themeparksWikiId": "273ddb8d-e7b5-4e34-8657-1113f49262a5"
+    "themeparksWikiId": "273ddb8d-e7b5-4e34-8657-1113f49262a5",
+    "points": 5
   },
   {
     "id": "mk_7dmt",
@@ -192,7 +207,8 @@
     "sr": false,
     "active": true,
     "resort": "wdw",
-    "themeparksWikiId": "9d4d5229-7142-44b6-b4fb-528920969a2c"
+    "themeparksWikiId": "9d4d5229-7142-44b6-b4fb-528920969a2c",
+    "points": 25
   },
   {
     "id": "mk_space_mountain",
@@ -204,7 +220,8 @@
     "sr": false,
     "active": true,
     "resort": "wdw",
-    "themeparksWikiId": "b2260923-9315-40fd-9c6b-44dd811dbe64"
+    "themeparksWikiId": "b2260923-9315-40fd-9c6b-44dd811dbe64",
+    "points": 20
   },
   {
     "id": "mk_tiana",
@@ -216,7 +233,8 @@
     "sr": false,
     "active": true,
     "resort": "wdw",
-    "themeparksWikiName": "Tiana’s Bayou Adventure"
+    "themeparksWikiName": "Tiana’s Bayou Adventure",
+    "points": 25
   },
   {
     "id": "mk_speedway",
@@ -228,7 +246,8 @@
     "sr": false,
     "active": true,
     "resort": "wdw",
-    "themeparksWikiId": "f163ddcd-43e1-488d-8276-2381c1db0a39"
+    "themeparksWikiId": "f163ddcd-43e1-488d-8276-2381c1db0a39",
+    "points": 10
   },
   {
     "id": "mk_peoplemover",
@@ -241,7 +260,8 @@
     "sr": false,
     "active": true,
     "resort": "wdw",
-    "themeparksWikiId": "ffcfeaa2-1416-4920-a1ed-543c1a1695c4"
+    "themeparksWikiId": "ffcfeaa2-1416-4920-a1ed-543c1a1695c4",
+    "points": 15
   },
   {
     "id": "mk_tron",
@@ -253,7 +273,8 @@
     "sr": false,
     "active": true,
     "resort": "wdw",
-    "themeparksWikiId": "5a43d1a7-ad53-4d25-abfe-25625f0da304"
+    "themeparksWikiId": "5a43d1a7-ad53-4d25-abfe-25625f0da304",
+    "points": 50
   },
   {
     "id": "mk_mermaid",
@@ -266,7 +287,8 @@
     "sr": false,
     "active": true,
     "resort": "wdw",
-    "themeparksWikiId": "3cba0cb4-e2a6-402c-93ee-c11ffcb127ef"
+    "themeparksWikiId": "3cba0cb4-e2a6-402c-93ee-c11ffcb127ef",
+    "points": 10
   },
   {
     "id": "mk_railroad",
@@ -279,7 +301,8 @@
     "sr": false,
     "active": true,
     "resort": "wdw",
-    "themeparksWikiId": "e39b831b-7731-49bb-815b-289b4f49a9fd"
+    "themeparksWikiId": "e39b831b-7731-49bb-815b-289b4f49a9fd",
+    "points": 10
   },
   {
     "id": "mk_cop",
@@ -291,7 +314,8 @@
     "sr": false,
     "active": true,
     "resort": "wdw",
-    "themeparksWikiId": "8183f3f2-1b59-4b9c-b634-6a863bdf8d84"
+    "themeparksWikiId": "8183f3f2-1b59-4b9c-b634-6a863bdf8d84",
+    "points": 20
   },
   {
     "id": "ep_frozen",
@@ -302,7 +326,8 @@
     "ll": true,
     "sr": false,
     "active": true,
-    "resort": "wdw"
+    "resort": "wdw",
+    "points": 25
   },
   {
     "id": "ep_gft",
@@ -314,7 +339,8 @@
     "ll": false,
     "sr": false,
     "active": true,
-    "resort": "wdw"
+    "resort": "wdw",
+    "points": 10
   },
   {
     "id": "ep_gotg",
@@ -325,7 +351,8 @@
     "ll": true,
     "sr": false,
     "active": true,
-    "resort": "wdw"
+    "resort": "wdw",
+    "points": 50
   },
   {
     "id": "ep_figment",
@@ -336,7 +363,8 @@
     "ll": true,
     "sr": false,
     "active": true,
-    "resort": "wdw"
+    "resort": "wdw",
+    "points": 10
   },
   {
     "id": "ep_lwtl",
@@ -347,7 +375,8 @@
     "ll": true,
     "sr": false,
     "active": true,
-    "resort": "wdw"
+    "resort": "wdw",
+    "points": 15
   },
   {
     "id": "ep_mission_space",
@@ -358,7 +387,8 @@
     "ll": true,
     "sr": false,
     "active": true,
-    "resort": "wdw"
+    "resort": "wdw",
+    "points": 15
   },
   {
     "id": "ep_remy",
@@ -369,18 +399,20 @@
     "ll": true,
     "sr": true,
     "active": true,
-    "resort": "wdw"
+    "resort": "wdw",
+    "points": 25
   },
   {
     "id": "ep_soarin",
     "park": "ep",
-    "name": "Soarin’ Around the World",
-    "shortName": "Soarin’",
+    "name": "Soarin'",
+    "shortName": "Soarin'",
     "sortKey": "Soarin’ Around the World",
     "ll": true,
     "sr": false,
     "active": true,
-    "resort": "wdw"
+    "resort": "wdw",
+    "points": 20
   },
   {
     "id": "ep_sse",
@@ -391,7 +423,8 @@
     "ll": true,
     "sr": false,
     "active": true,
-    "resort": "wdw"
+    "resort": "wdw",
+    "points": 15
   },
   {
     "id": "ep_test_track",
@@ -402,7 +435,8 @@
     "ll": true,
     "sr": true,
     "active": true,
-    "resort": "wdw"
+    "resort": "wdw",
+    "points": 20
   },
   {
     "id": "ep_nemo",
@@ -413,7 +447,8 @@
     "ll": true,
     "sr": false,
     "active": true,
-    "resort": "wdw"
+    "resort": "wdw",
+    "points": 10
   },
   {
     "id": "hs_saucers",
@@ -424,7 +459,8 @@
     "ll": true,
     "sr": false,
     "active": true,
-    "resort": "wdw"
+    "resort": "wdw",
+    "points": 10
   },
   {
     "id": "hs_mfsr",
@@ -435,7 +471,8 @@
     "ll": true,
     "sr": true,
     "active": true,
-    "resort": "wdw"
+    "resort": "wdw",
+    "points": 20
   },
   {
     "id": "hs_mmrr",
@@ -447,7 +484,8 @@
     "ll": true,
     "sr": false,
     "active": true,
-    "resort": "wdw"
+    "resort": "wdw",
+    "points": 25
   },
   {
     "id": "hs_rnrc",
@@ -458,7 +496,8 @@
     "ll": true,
     "sr": true,
     "active": true,
-    "resort": "wdw"
+    "resort": "wdw",
+    "points": 15
   },
   {
     "id": "hs_sdd",
@@ -469,7 +508,8 @@
     "ll": true,
     "sr": false,
     "active": true,
-    "resort": "wdw"
+    "resort": "wdw",
+    "points": 25
   },
   {
     "id": "hs_star_tours",
@@ -481,7 +521,8 @@
     "ll": true,
     "sr": false,
     "active": true,
-    "resort": "wdw"
+    "resort": "wdw",
+    "points": 15
   },
   {
     "id": "hs_rotr",
@@ -493,7 +534,8 @@
     "ll": true,
     "sr": true,
     "active": true,
-    "resort": "wdw"
+    "resort": "wdw",
+    "points": 50
   },
   {
     "id": "hs_tot",
@@ -504,7 +546,8 @@
     "ll": true,
     "sr": false,
     "active": true,
-    "resort": "wdw"
+    "resort": "wdw",
+    "points": 25
   },
   {
     "id": "hs_tsm",
@@ -515,7 +558,8 @@
     "ll": true,
     "sr": false,
     "active": true,
-    "resort": "wdw"
+    "resort": "wdw",
+    "points": 20
   },
   {
     "id": "ak_fop",
@@ -526,7 +570,8 @@
     "ll": true,
     "sr": false,
     "active": true,
-    "resort": "wdw"
+    "resort": "wdw",
+    "points": 30
   },
   {
     "id": "ak_dinosaur",
@@ -548,7 +593,8 @@
     "ll": true,
     "sr": true,
     "active": true,
-    "resort": "wdw"
+    "resort": "wdw",
+    "points": 15
   },
   {
     "id": "ak_krr",
@@ -559,7 +605,8 @@
     "ll": true,
     "sr": false,
     "active": true,
-    "resort": "wdw"
+    "resort": "wdw",
+    "points": 15
   },
   {
     "id": "ak_safari",
@@ -570,7 +617,8 @@
     "ll": true,
     "sr": false,
     "active": true,
-    "resort": "wdw"
+    "resort": "wdw",
+    "points": 20
   },
   {
     "id": "ak_nrj",
@@ -581,7 +629,8 @@
     "ll": true,
     "sr": false,
     "active": true,
-    "resort": "wdw"
+    "resort": "wdw",
+    "points": 20
   },
   {
     "id": "ak_we_train",
@@ -592,7 +641,8 @@
     "ll": false,
     "sr": false,
     "active": true,
-    "resort": "wdw"
+    "resort": "wdw",
+    "points": 10
   },
   {
     "id": "dlr_alice_in_wonderland",
@@ -664,8 +714,8 @@
     "id": "dlr_chip_n_dales_go_coaster",
     "resort": "dlr",
     "park": "dl",
-    "name": "Chip 'n' Dale's Go Coaster",
-    "shortName": "Chip 'n' Dale's Go Coaster",
+    "name": "Chip 'n' Dale's GADGETcoaster",
+    "shortName": "Chip 'n' Dale's GADGETcoaster",
     "sortKey": "07 Chip 'n' Dale's Go Coaster",
     "ll": false,
     "sr": false,
@@ -1041,7 +1091,7 @@
     "id": "dlr_the_incredicoaster",
     "resort": "dlr",
     "park": "dca",
-    "name": "The Incredicoaster",
+    "name": "Incredicoaster",
     "shortName": "Incredicoaster",
     "sortKey": "05 Incredicoaster",
     "ll": true,
@@ -1097,8 +1147,8 @@
     "id": "dlr_luigis_rollickin_roadsters",
     "resort": "dlr",
     "park": "dca",
-    "name": "Luigi's Rollickin Roadsters",
-    "shortName": "Luigi's Rollickin Roadsters",
+    "name": "Luigi's Rollickin' Roadsters",
+    "shortName": "Luigi's Rollickin' Roadsters",
     "sortKey": "10 Luigi's Rollickin Roadsters",
     "ll": false,
     "sr": false,
@@ -1163,8 +1213,8 @@
     "id": "dlr_soarin_around_the_world",
     "resort": "dlr",
     "park": "dca",
-    "name": "Soarin' Around the World",
-    "shortName": "Soarin' Around the World",
+    "name": "Soarin'",
+    "shortName": "Soarin'",
     "sortKey": "16 Soarin' Around the World",
     "ll": true,
     "sr": false,
