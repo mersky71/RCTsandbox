@@ -147,10 +147,10 @@
   {
     "id": "mk_pooh",
     "park": "mk",
-    "name": "Winnie the Pooh",
+    "name": "Many Adventures of Winnie the Pooh",
     "mediumName": "Many Adventures of Winnie the Pooh",
     "shortName": "Pooh",
-    "sortKey": "Winnie the Pooh",
+    "sortKey": "Many Adventures of Winnie the Pooh",
     "ll": true,
     "sr": false,
     "active": true,
