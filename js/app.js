@@ -382,6 +382,7 @@ function setupPointsParkPicker() {
       pointsParkMenu.setAttribute("aria-hidden", "true");
       applyParkTheme(currentPark);
       if (active) renderParkPage({ readOnly: false });
+      if (isPointsMode()) requestAnimationFrame(() => window.scrollTo({ top: 0, left: 0, behavior: "auto" }));
     });
   });
 }
@@ -676,10 +677,10 @@ function setHeaderEnabled(enabled) {
   counterPill.style.display = enabled ? "inline-flex" : "none";
 
   // Standard mode keeps the mature Rides -> Park order. Points mode uses
-  // compact Park -> Points -> Rides to keep all three status items on one line.
-  if (pointsParkPicker?.parentElement) pointsParkPicker.parentElement.style.order = pointsMode ? "1" : "3";
-  if (pointsPill) pointsPill.style.order = pointsMode ? "2" : "2";
-  counterPill.style.order = pointsMode ? "3" : "1";
+  // compact Pts -> Rides -> Park so the selector sits next to More.
+  if (pointsPill) pointsPill.style.order = pointsMode ? "1" : "2";
+  counterPill.style.order = pointsMode ? "2" : "1";
+  if (pointsParkPicker?.parentElement) pointsParkPicker.parentElement.style.order = pointsMode ? "3" : "3";
   parkSelect.style.order = "2";
 
   // Enable/disable
@@ -1666,7 +1667,7 @@ function renderParkPage({ readOnly = false } = {}) {
 
   // Header pills
   counterPill.textContent = `Rides: ${active.events.length}`;
-  if (pointsPill) pointsPill.textContent = `Points: ${getCurrentPointsTotal()}`;
+  if (pointsPill) pointsPill.textContent = `Pts: ${getCurrentPointsTotal()}`;
   updatePointsParkPickerLabel();
 
   const excludedSet = getExcludedSetForActive();
@@ -1925,6 +1926,7 @@ function logRide(ride, mode) {
   }
 
   renderParkPage({ readOnly: false });
+  if (isPointsMode()) requestAnimationFrame(() => window.scrollTo({ top: 0, left: 0, behavior: "auto" }));
 }
 
 function buildRideTweet({ rideNumber, rideName, mode, timeLabel, llNumber }) {
@@ -1932,7 +1934,7 @@ function buildRideTweet({ rideNumber, rideName, mode, timeLabel, llNumber }) {
 
   // Only mention the line type if it's NOT standby (standby is the default) and add count of LL
   const mid =
-    mode === "ll" ? ` using Lightning Lane${llNumber ? ` #${llNumber}` : ""}` :
+    mode === "ll" ? ` using LL${llNumber ? ` #${llNumber}` : ""}` :
     mode === "sr" ? " using Single Rider" :
     "";
 
@@ -1999,15 +2001,46 @@ function truncateToWidth(ctx, text, maxWidth) {
 
 async function renderUpdateImagePng(ch) {
   const events = ch?.events || [];
+  const pointsMode = isPointsMode(ch);
 
-  // Determine "as of" time = time of most recent ride (fallback to now)
-  const lastEvent = [...events]
-    .filter(e => e.timeISO)
-    .sort((a, b) => new Date(b.timeISO) - new Date(a.timeISO))[0];
+  // For Points mode, park bonuses are explicit timestamped events for ordering,
+  // even though their claim time is intentionally not printed in the image.
+  const bonusRows = pointsMode
+    ? Object.entries(ch?.parkBonuses || {})
+        .filter(([, bonus]) => bonus?.claimed)
+        .map(([parkId, bonus]) => ({
+          rowType: "bonus",
+          parkId,
+          timestamp: bonus.timestamp || "",
+          points: Number(bonus.points || POINTS_PARK_BONUSES[parkId] || 0)
+        }))
+    : [];
 
-  const asOfDate = lastEvent?.timeISO
-    ? new Date(lastEvent.timeISO)
-    : new Date();
+  const imageRows = pointsMode
+    ? [
+        ...events.map((event, eventIndex) => ({ rowType: "ride", event, eventIndex, timestamp: event.timeISO || "" })),
+        ...bonusRows
+      ].sort((a, b) => {
+        const ta = a.timestamp ? new Date(a.timestamp).getTime() : Number.MAX_SAFE_INTEGER;
+        const tb = b.timestamp ? new Date(b.timestamp).getTime() : Number.MAX_SAFE_INTEGER;
+        return ta - tb;
+      })
+    : events.map((event, eventIndex) => ({ rowType: "ride", event, eventIndex, timestamp: event.timeISO || "" }));
+
+  // "As of" is the latest scored/logged action in Points mode, otherwise latest ride.
+  const actionTimes = pointsMode
+    ? [
+        ...events.map(e => e.timeISO).filter(Boolean),
+        ...bonusRows.map(b => b.timestamp).filter(Boolean)
+      ]
+    : events.map(e => e.timeISO).filter(Boolean);
+
+  const latestTime = actionTimes
+    .map(t => new Date(t))
+    .filter(d => !Number.isNaN(d.getTime()))
+    .sort((a, b) => b - a)[0];
+
+  const asOfDate = latestTime || new Date();
 
   // Use the challenge day for the date label (unchanged)
   const dateLabel = formatDayKeyLong(ch?.dayKey);
@@ -2017,7 +2050,9 @@ async function renderUpdateImagePng(ch) {
     ? `${dateLabel} challenge run`
     : `Challenge run`;
 
-  const headerLine2 = `${events.length} rides as of ${formatTime12(asOfDate)}`;
+  const headerLine2 = pointsMode
+    ? `${getCurrentPointsTotal(ch)} points • ${events.length} rides as of ${formatTime12(asOfDate)}`
+    : `${events.length} rides as of ${formatTime12(asOfDate)}`;
 
   // Keep returning headerText for share text (use both lines)
   const headerText = `${headerLine1} — ${headerLine2}`;
@@ -2030,12 +2065,13 @@ async function renderUpdateImagePng(ch) {
   const colN = 52;
   const colTime = 110;
   const colLine = 70;
+  const colPoints = pointsMode ? 64 : 0;
 
   const W = 720;
   const tableW = W - pad * 2;
-  const colRide = tableW - colN - colTime - colLine;
+  const colRide = tableW - colN - colTime - colLine - colPoints;
 
-  const H = pad * 2 + headH + headerRowH + events.length * rowH + 18;
+  const H = pad * 2 + headH + headerRowH + imageRows.length * rowH + 18;
 
   const dpr = Math.max(2, Math.floor(window.devicePixelRatio || 1));
   const canvas = document.createElement("canvas");
@@ -2056,7 +2092,7 @@ async function renderUpdateImagePng(ch) {
   ctx.font = "700 28px system-ui, -apple-system, Segoe UI, Roboto, Arial";
   ctx.fillText(headerLine1, pad, pad + 26);
 
-  // Line 2 (rides as of time)
+  // Line 2 (score/rides as of time)
   ctx.font = "700 28px system-ui, -apple-system, Segoe UI, Roboto, Arial";
   ctx.fillText(headerLine2, pad, pad + 60);
 
@@ -2076,7 +2112,8 @@ async function renderUpdateImagePng(ch) {
   ctx.fillText("#", pad + 8, y);
   ctx.fillText("Time", pad + colN + 8, y);
   ctx.fillText("Ride", pad + colN + colTime + 8, y);
-  ctx.fillText("LL/SR", pad + colN + colTime + colRide + 6, y);
+  if (pointsMode) ctx.fillText("Pts", pad + colN + colTime + colRide + 8, y);
+  ctx.fillText("LL/SR", pad + colN + colTime + colRide + colPoints + 6, y);
 
   // rows start
   y += 16;
@@ -2085,12 +2122,15 @@ async function renderUpdateImagePng(ch) {
   ctx.strokeStyle = "#e5e7eb";
   ctx.lineWidth = 1;
 
-  for (let i = 0; i < events.length; i++) {
-    const e = events[i];
+  for (let i = 0; i < imageRows.length; i++) {
+    const row = imageRows[i];
     const rowTop = y + i * rowH;
+    const e = row.rowType === "ride" ? row.event : null;
 
     // Park-tinted background (muted)
-    const parkId = e.park || ridesById.get(e.rideId)?.park || "mk";
+    const parkId = row.rowType === "bonus"
+      ? row.parkId
+      : (e.park || ridesById.get(e.rideId)?.park || "mk");
     const tint = (PARK_THEME[parkId]?.park2) || "rgba(0,0,0,.04)";
     ctx.fillStyle = tint;
     ctx.fillRect(pad, rowTop, tableW, rowH);
@@ -2106,19 +2146,30 @@ async function renderUpdateImagePng(ch) {
     ctx.fillStyle = "#111827";
     const ty = rowTop + 23;
 
+    if (row.rowType === "bonus") {
+      const bonusLabel = `${getParkDisplayName(row.parkId)} park bonus`;
+      const bonusText = truncateToWidth(ctx, bonusLabel, colRide - 12);
+      ctx.font = "700 18px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+      ctx.fillText(bonusText, pad + colN + colTime + 8, ty);
+      ctx.fillText(String(row.points), pad + colN + colTime + colRide + 8, ty);
+      ctx.font = "500 18px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+      continue;
+    }
+
     const timeStr = e.timeISO ? formatTime12(new Date(e.timeISO)) : "";
     const rideStr = mediumRideNameFor(e.rideId, e.rideName);
     const rideText = truncateToWidth(ctx, rideStr, colRide - 12);
     const lineStr = lineAbbrev(e.mode);
 
-    ctx.fillText(String(i + 1), pad + 8, ty);
+    ctx.fillText(String(row.eventIndex + 1), pad + 8, ty);
     ctx.fillText(timeStr, pad + colN + 8, ty);
     ctx.fillText(rideText, pad + colN + colTime + 8, ty);
-    ctx.fillText(lineStr, pad + colN + colTime + colRide + 18, ty);
+    if (pointsMode) ctx.fillText(String(getRidePoints(e)), pad + colN + colTime + colRide + 8, ty);
+    ctx.fillText(lineStr, pad + colN + colTime + colRide + colPoints + 18, ty);
   }
 
   // bottom border
-  const bottomY = y + events.length * rowH;
+  const bottomY = y + imageRows.length * rowH;
   ctx.strokeStyle = "#e5e7eb";
   ctx.beginPath();
   ctx.moveTo(pad, bottomY);
